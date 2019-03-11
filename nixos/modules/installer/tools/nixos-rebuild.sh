@@ -4,6 +4,11 @@ if [ -x "@shell@" ]; then export SHELL="@shell@"; fi;
 
 set -e
 
+if [[ $EUID > 0 ]]; then
+  echo -e "\033[31;1merror:\033[0m nixos-rebuild must be run as root." >&2
+  exit 1
+fi
+
 showSyntax() {
     exec man nixos-rebuild
     exit 1
