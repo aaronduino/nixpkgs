@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
     sha256 = "1vjwcmp51h7dsvwn0qx93w9chp3wp970v7d9mjhk7jyamcbfywn3";
   };
 
-  buildInputs = [ ncurses gettext python3 python3Packages.wrapPython ];
+  buildInputs = [ ncurses gettext python3 python3Packages.wrapPython python3Packages.httplib2 ];
   nativeBuildInputs = [ makeWrapper ];
 
   postInstall = ''
