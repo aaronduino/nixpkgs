@@ -1,0 +1,6 @@
+personal/*
+!personal/personal.nix
+!personal/*.enc
+!personal/decrypt.sh
+hardware-configuration.nix
+configuration.nix

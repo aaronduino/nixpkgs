@@ -1,0 +1,13 @@
+diff --git a/stylesheets/_variables.scss b/stylesheets/_variables.scss
+index 7e3a2eda..30ef064b 100644
+--- a/stylesheets/_variables.scss
++++ b/stylesheets/_variables.scss
+@@ -51,7 +51,7 @@ $color-gray-60: #6b6d70;
+ $color-gray-75: #3d3e44;
+ $color-gray-85: #23252a;
+ $color-gray-90: #17191d;
+-$color-gray-95: #0f1012;
++$color-gray-95: #181920;
+ $color-black: #000000;
+ 
+ $color-crimson: #cc163d;

@@ -1,0 +1,33 @@
+/* put your custom css here. */
+
+.messages-3amgkR, .chatContent-a9vAAp {
+  background-color: #282a36;
+}
+
+.children-19S4PO:after {
+  display: none;
+}
+
+.scrollableContainer-2NUZem {
+  background-color: #44475a;
+}
+
+.sidebar-2K8pFh > .container-PNkimc {
+  background-color: #181920;
+}
+
+.notice-2FJMB4 {
+  display: none;
+}
+
+.title-3qD0b-, .scroller-2TZvBN, .panels-j1Uci_, .searchBar-6Kv8R2, .scroller-1JbKMe, .container-3gCOGc, .themed-ANHk51, .friendsTableBody-1ZhKif {
+  background-color: #181920 !important;
+}
+
+.form-2fGMdU {
+  background-color: #282a36;
+}
+
+.grid-1nZz7S {
+  background-color: #181920b3;
+}
