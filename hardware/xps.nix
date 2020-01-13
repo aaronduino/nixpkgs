@@ -18,7 +18,7 @@ in
   # use systemd-boot with uefi
   boot.loader = {
     systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
+    efi.canTouchEfiVariables = false;
     grub.enable = false;
   };
 

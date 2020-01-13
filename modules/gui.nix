@@ -19,7 +19,7 @@ in
       };
     };
 
-    boot.plymouth.enable = true;
+    boot.plymouth.enable = false;
 
     vars.internal = {
       sublime-text.settings =
