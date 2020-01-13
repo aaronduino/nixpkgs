@@ -18,7 +18,7 @@
     username = "user";
     hostname = "nixos-usb";
 
-    gui = "pantheon";
+    gui = "i3";
     hidpi = true;
 
     bluetooth = true;
@@ -35,6 +35,5 @@
     secrets = ../secrets/usb;
   };
 
-  networking.networkmanager.enable = false;
-  networking.wireless.enable = true;
+  networking.wireless.enable = false;
 }

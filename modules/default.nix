@@ -21,13 +21,13 @@ in
         ) names;
       paths = builtins.map (x: ./. + ("/" + x)) files;
     in
-      paths ++ [ ../hardware-configuration.nix ];
+      paths;
 
   boot.cleanTmpDir = true;
 
   networking = {
     hostName = cfg.hostname;
-    networkmanager.enable = lib.mkDefault true;
+    networkmanager.enable = true;
   };
 
   services.dnsmasq = {
@@ -52,10 +52,10 @@ in
   #   rules = builtins.concatStringsSep "\n" secrets.usbguardRules;
   # };
 
-  # virtualisation.virtualbox.host = {
-  #   enable = true;
+  virtualisation.virtualbox.host = {
+    enable = true;
   #   # enableExtensionPack = true; # takes a long time to build
-  # };
+  };
 
   security.sudo = {
     enable = true;
@@ -87,6 +87,7 @@ in
       "wheel"
       "video"
       "audio"
+      "vboxusers"
     ];
     createHome = true;
     home = "/home/${cfg.username}";

@@ -85,7 +85,7 @@ in
             content = " ";
           };
 
-          "module/music" = {
+          "module/music" = { # Uptown Vibes
             type = "custom/script";
             exec = writeScript ''
               title=$(playerctl metadata 'xesam:title' 2> /dev/null)
