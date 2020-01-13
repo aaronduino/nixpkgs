@@ -27,11 +27,8 @@ fi
 
 if [ `whoami` = "root" ]; then
 	echo -n "#"
-elif [ `whoami` = "ajanse" ]; then
-	echo -n "$"
 else
-	echo -n `whoami`
-	echo -n " %"
+	echo -n "$"
 fi
 
 echo -n " "
