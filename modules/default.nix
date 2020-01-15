@@ -24,6 +24,7 @@ in
       paths;
 
   boot.cleanTmpDir = true;
+  boot.tmpOnTmpfs = true;
 
   networking = {
     hostName = cfg.hostname;
