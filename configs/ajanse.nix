@@ -16,7 +16,7 @@
     name = "Aaron Janse";
     email = "ajanse@ajanse.me";
 
-    sound = false;
+    sound = true;
     bluetooth = false;
     printing = false;
 
