@@ -18,6 +18,8 @@ in
           source = ../dotfiles/sublime-text-3;
         };
 
+        ".gnupg/gpg-agent.conf".text = "pinentry-program ${pkgs.pinentry-gtk2}/bin/pinentry";
+
         ".config/git/config".text = ''
           [alias]
           d=difftool --no-symlinks --dir-diff

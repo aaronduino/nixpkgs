@@ -98,9 +98,12 @@ in
   environment.systemPackages = with pkgs; [
     acpi
     gnupg
-    pinentry
+    pinentry-curses
     sysstat
     powertop
+    
+    minecraft
+    pstree
 
     git-crypt
 

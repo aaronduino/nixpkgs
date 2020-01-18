@@ -13,21 +13,22 @@ let
       XF86AudioNext = "exec ${pkgs.playerctl}/bin/playerctl next";
       XF86AudioPrev = "exec ${pkgs.playerctl}/bin/playerctl previous";
 
+      XF86AudioRaiseVolume = "exec amixer set Master 5%+";
+      XF86AudioLowerVolume = "exec amixer set Master 5%-";
+      XF86AudioMute = "exec amixer set Master 0%";
 
-      "${mod}+bracketleft" = "workspace prev";
-      "${mod}+bracketright    " = "workspace next";
+      XF86MonBrightnessUp = "exec light -A 5";
+      XF86MonBrightnessDown = "exec light -U 5";
 
 
-      "XF86AudioRaiseVolume" = "exec amixer set Master 2%+";
-      "XF86AudioLowerVolume" = "exec amixer set Master 2%-";
-      "XF86AudioMute" = "exec amixer set Master 0%";
+      "${mod}+minus" = "workspace prev";
+      "${mod}+equal" = "workspace next";
+      "${mod}+bracketleft" = "focus left";
+      "${mod}+bracketright" = "focus right";
 
       "Shift+F1" = "exec light -S 0";
       "F1" = "exec light -U 5";
       "F2" = "exec light -A 5";
-
-      "XF86MonBrightnessDown" = "exec light -U 5";
-      "XF86MonBrightnessUp" = "exec light -A 5";
 
       "${mod}+Shift+X" = "exec ${../bin/clear-clipboard.sh}";
 

@@ -137,7 +137,7 @@ in
       vscode
       (import ../pkgs/sublime-merge).sublimeMerge
       freeoffice
-      discord
+      (pkgs.callPackage (import ../pkgs/discord) {})
       spotify
       evince
       okular
@@ -175,8 +175,8 @@ in
             oldAttrs: rec {
               phases = [ "unpackPhase" "installPhase" "fixupPhase" ];
               fixupPhase = ''
-                cp $out/libexec/resources/app.asar $out/libexec/resources/app.asar.bak
-                cat $out/libexec/resources/app.asar.bak \
+                cp $out/lib/Signal/resources/app.asar $out/lib/Signal/resources/app.asar.bak
+                cat $out/lib/Signal/resources/app.asar.bak \
                   | sed 's/background-color: #f6f6f6;/background-color: #181920;/g' \
                   | sed 's/#1b1b1b;/#f8f8f2;/g' \
                   | sed 's/#5e5e5e;/#f8f8f2;/g' \
@@ -190,8 +190,8 @@ in
                   | sed 's/2px solid #ffffff;/2px solid #282a36;/g' \
                   | sed 's/setMenuBarVisibility(visibility);/setMenuBarVisibility(false     );/g' \
                   | sed 's/setFullScreen(true)/setFullScreen(0==1)/g' \
-                  > $out/libexec/resources/app.asar
-                rm $out/libexec/resources/app.asar.bak
+                  > $out/lib/Signal/resources/app.asar
+                rm $out/lib/Signal/resources/app.asar.bak
               '';
             }
           );
