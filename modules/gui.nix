@@ -173,8 +173,7 @@ in
         self: super: {
           signal-desktop = super.signal-desktop.overrideAttrs (
             oldAttrs: rec {
-              phases = [ "unpackPhase" "installPhase" "fixupPhase" ];
-              fixupPhase = ''
+              preFixup = oldAttrs.preFixup + ''
                 cp $out/lib/Signal/resources/app.asar $out/lib/Signal/resources/app.asar.bak
                 cat $out/lib/Signal/resources/app.asar.bak \
                   | sed 's/background-color: #f6f6f6;/background-color: #181920;/g' \
