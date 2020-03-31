@@ -23,6 +23,14 @@ in
     in
       paths;
 
+  nix.trustedUsers = [ "@wheel" ];
+  nix.distributedBuilds = true;
+
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
+  services.journald.extraConfig = ''MaxRetentionSec=1week''; 
+
+
   boot.cleanTmpDir = true;
   boot.tmpOnTmpfs = true;
 
@@ -33,7 +41,10 @@ in
 
   services.dnsmasq = {
     enable = true;
-    servers = [ "1.1.1.1" "1.0.0.1" ];
+    servers = [ "8.8.8.8" "8.8.4.4" ];
+    extraConfig = ''
+      address=/idk/127.0.0.1
+    '';
   };
 
   time.timeZone = "America/Los_Angeles";
@@ -43,7 +54,10 @@ in
   powerManagement.powertop.enable = true;
   programs.xss-lock = {
     enable = true;
-    lockerCommand = "${pkgs.xsecurelock}/bin/xsecurelock";
+    lockerCommand = "${pkgs.writeScriptBin "modified-xsecurelock" ''
+      export XSECURELOCK_PASSWORD_PROMPT=time_hex
+      ${pkgs.xsecurelock}/bin/xsecurelock
+    ''}/bin/modified-xsecurelock";
   };
 
   services.gnome3.gnome-keyring.enable = true;
@@ -55,7 +69,7 @@ in
 
   virtualisation.virtualbox.host = {
     enable = true;
-  #   # enableExtensionPack = true; # takes a long time to build
+    #   # enableExtensionPack = true; # takes a long time to build
   };
 
   security.sudo = {
@@ -101,21 +115,21 @@ in
     pinentry-curses
     sysstat
     powertop
-    
+
     minecraft
     pstree
 
     git-crypt
 
-   # (import ../pkgs/mcfly.nix)
+    # (import ../pkgs/mcfly.nix)
 
-    (pkgs.callPackage ../pkgs/amp.nix {})
+    # (pkgs.callPackage ../pkgs/amp.nix {})
 
     nixops
 
     docker-compose
 
-   # vulnix # scan system vulnerabilities
+    # vulnix # scan system vulnerabilities
 
     #(import ../pkgs/ncspot.nix)
 
@@ -132,7 +146,6 @@ in
     tldr
     tree
     ranger
-    fzf
     jq
     hexyl
     zip

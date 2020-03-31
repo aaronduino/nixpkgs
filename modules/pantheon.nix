@@ -10,8 +10,8 @@ in
 
   config = mkIf (cfg.gui == "pantheon") {
     services.xserver = {
-    	desktopManager.pantheon.enable = true;
-    	displayManager.lightdm.greeters.pantheon.enable = false;
+      desktopManager.pantheon.enable = true;
+      displayManager.lightdm.greeters.pantheon.enable = false;
     };
   };
 }

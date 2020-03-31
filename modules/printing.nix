@@ -17,6 +17,7 @@ in
     services.avahi.nssmdns = true;
     networking.hosts = {
       "192.168.1.249" = [ "BRW707781875760.local" ];
+      "172.31.98.1" = [ "aruba.odyssys.net" ];
     };
   };
 }

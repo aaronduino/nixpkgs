@@ -20,11 +20,14 @@ let
       XF86MonBrightnessUp = "exec light -A 5";
       XF86MonBrightnessDown = "exec light -U 5";
 
+      "${mod}+space" = "workspace back_and_forth";
 
       "${mod}+minus" = "workspace prev";
       "${mod}+equal" = "workspace next";
       "${mod}+bracketleft" = "focus left";
       "${mod}+bracketright" = "focus right";
+      "${mod}+Shift+bracketleft" = "move left";
+      "${mod}+Shift+bracketright" = "move right";
 
       "Shift+F1" = "exec light -S 0";
       "F1" = "exec light -U 5";
@@ -65,8 +68,6 @@ let
       "${mod}+w" = "layout tabbed";
       "${mod}+e" = "layout toggle split";
       "${mod}+r" = "mode ${if isAlt then "resizeAlt" else "resizeWin"}";
-
-      # "${mod}+j" = "mode jump";
 
       "${mod}+1" = "workspace 1";
       "${mod}+2" = "workspace 2";
@@ -126,6 +127,7 @@ in
           enable = true;
           package = pkgs.i3-gaps;
           config = {
+            floating.modifier = "Shift";
             window.border = 1;
             colors.focused = let
               color = "#61afef";
@@ -153,19 +155,31 @@ in
               smartGaps = true;
             };
             startup = [
+            (let bar_script = ''
+                  ${pkgs.python36.withPackages
+                    (ps: with ps; [ psutil i3ipc ])}/bin/python3 \
+                      -u ${../bin/i3.py} |
+                        ${pkgs.lemonbar-xft}/bin/lemonbar \
+                        -f "Overpass Mono:pixelsize=30;0" \
+                        -f "Font Awesome 5 Free:pixelsize=30;0" \
+                        -f "Font Awesome 5 Free:style=Solid:pixelsize=30;0" \
+                        -u 4 -g x60 -B "${cfg.colors.background}"
+            ''; in
               {
                 command = "bash ${writeScript ''
                   xrandr --output eDP-1 --scale 1.25x1.25
-                  xinput set-prop "CUST0001:00 06CB:76AF Touchpad" "Trackpad Scroll Distance" 15
-                  xinput set-prop "CUST0001:00 06CB:76AF Touchpad" "libinput Tapping Drag Enabled" 0
-                  xinput set-prop "CUST0001:00 06CB:76AF Touchpad" "libinput Accel Speed" 0.22
-                  sleep 0.5
-                  sh ${../bin/restart-polybar.sh}
+                  xinput set-prop "SynPS/2 Synaptics TouchPad" "libinput Accel Speed" 0.55
+                  xinput set-prop "SynPS/2 Synaptics TouchPad" "libinput Tapping Drag Enabled" 0
+                  xinput set-prop "SysPS/2 Synaptics TouchPad" "libinput Disable While Typing Enabled" 0
+                  # xsetroot -solid "${cfg.colors.background}"
+                  feh --bg-fill ${../assets/cal.png}
 
-                  xsetroot -solid "#181920"
+                  ${pkgs.writeScriptBin "status-bar" bar_script}/bin/status-bar
+                  
+                      
                 ''}";
                 always = true;
-              }
+              })
             ];
             assigns = {};
             modes =

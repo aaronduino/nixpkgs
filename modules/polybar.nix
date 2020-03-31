@@ -13,7 +13,7 @@ in
 
   config = mkIf (cfg.gui == "i3") {
     home-manager.users."${cfg.username}".services.polybar = {
-      enable = true;
+      enable = false;
       script = "";
       package = pkgs.polybar.override {
         i3GapsSupport = true;
@@ -46,7 +46,7 @@ in
             height = if cfg.hidpi then 55 else 22;
             modules-left = "i3 music";
             modules-center = "cpu temp wifi memory";
-            modules-right = "date";
+            modules-right = "todo date";
             overline-size = if onBottom then 0 else 4;
             underline-size = if onBottom then 4 else 0;
             module-margin = 1;
@@ -85,7 +85,8 @@ in
             content = " ";
           };
 
-          "module/music" = { # Uptown Vibes
+          "module/music" = {
+            # Uptown Vibes
             type = "custom/script";
             exec = writeScript ''
               title=$(playerctl metadata 'xesam:title' 2> /dev/null)
@@ -165,6 +166,11 @@ in
           #   type = "custom/text";
           #   content = "DunderMifflinAP";
           # };
+
+          "module/todo" = {
+            type = "custom/text";
+            content = "(study physics)";
+          };
 
           "module/date" = {
             type = "custom/script";

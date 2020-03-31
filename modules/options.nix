@@ -23,7 +23,7 @@ with lib;
     };
 
     gui = mkOption {
-      type = types.enum [ "none" "i3" "bspwm" "pantheon" ];
+      type = types.enum [ "none" "i3" "bspwm" "pantheon" "kde" "sway" ];
     };
 
     secrets = mkOption {
@@ -39,6 +39,36 @@ with lib;
       foreground = mkOption {
         type = types.str;
         default = "#f8f8f2";
+      };
+
+      red = mkOption {
+        type = types.str;
+        default = "#ff5555";
+      };
+
+      orange = mkOption {
+        type = types.str;
+        default = "#ffb86c";
+      };
+
+      yellow = mkOption {
+        type = types.str;
+        default = "#f1fa8c";
+      };
+
+      green = mkOption {
+        type = types.str;
+        default = "#50fa7b";
+      };
+
+      blue = mkOption {
+        type = types.str;
+        default = "#8be9fd";
+      };
+
+      purple = mkOption {
+        type = types.str;
+        default = "#bd93f9";
       };
     };
 

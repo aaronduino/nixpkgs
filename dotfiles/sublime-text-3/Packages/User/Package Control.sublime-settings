@@ -1,12 +1,13 @@
 {
-	"bootstrapped": true,
 	"in_process_packages":
 	[
 	],
 	"installed_packages":
 	[
 		"Dracula Color Scheme",
+		"LSP",
 		"Nix",
-		"Package Control"
+		"Package Control",
+		"Rust Enhanced"
 	]
 }

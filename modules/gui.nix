@@ -2,6 +2,11 @@
 with lib;
 let
   cfg = config.vars;
+  qemu-raspi4 = with pkgs; callPackage ../pkgs/qemu {
+    inherit (darwin.apple_sdk.frameworks) CoreServices Cocoa Hypervisor;
+    inherit (darwin.stubs) rez setfile;
+    python = python3;
+  };
 in
 {
   imports = [
@@ -9,15 +14,42 @@ in
   ];
 
   config = mkIf (cfg.gui != "none") {
-    services.xserver = {
-      enable = true;
 
-      # auto login
-      displayManager.auto = {
-        enable = true;
-        user = cfg.username;
+
+    # services.xserver = {
+    #   enable = true;
+
+    #   # auto login
+    #   displayManager.lightdm.autoLogin = {
+    #     enable = true;
+    #     user = cfg.username;
+    #   };
+
+
+    #   #displayManager.sessionCommands = ''
+    #   #  ${pkgs.xorg.xrdb}/bin/xrdb -merge <<EOF
+    #   #    Xft.dpi: 192
+    #   #  EOF
+    #   #'';
+    # };
+
+    systemd.services = {
+      status-bar = {
+        description = "Graphical status bar";
+        wantedBy = [ "graphical-session.target" ];
+        after    = [ "graphical-session.target" ];
+        serviceConfig.ExecStart = ''
+        '';
       };
     };
+
+
+
+    # vars.colors = {
+    #   background = "#343d46";
+    #   green = "#8eb975";
+    #   purple = "#c494c3";
+    # };
 
     boot.plymouth.enable = false;
 
@@ -26,6 +58,8 @@ in
         {
           font_face = "Overpass Mono";
           font_size = 12;
+          tab_size = 2;
+          translate_tabs_to_spaces = true;
 
           hot_exit = false;
           remember_open_files = false;
@@ -61,14 +95,14 @@ in
     };
 
     home-manager.users.${cfg.username} = {
-      xsession = {
-        enable = cfg.gui == "i3";
-        pointerCursor = {
-          name = "Vanilla-DMZ";
-          package = pkgs.vanilla-dmz;
-          size = 128;
-        };
-      };
+      # xsession = {
+      #   enable = cfg.gui == "i3";
+      #   pointerCursor = {
+      #     name = "Vanilla-DMZ";
+      #     package = pkgs.vanilla-dmz;
+      #     size = 128;
+      #   };
+      # };
       programs.rofi = {
         enable = cfg.gui == "i3" || cfg.gui == "bspwn";
         fullscreen = false;
@@ -81,7 +115,7 @@ in
         width = 800;
         colors = {
           window = {
-            background = "#181920";
+            background = cfg.colors.background;
             border = "#F8F8F2";
             separator = "#c3c6c8";
           };
@@ -102,30 +136,71 @@ in
 
       programs.alacritty = {
         enable = true;
-        settings.colors = {
-          primary = {
-            background = "0x181920";
-            foreground = "0xf8f8f2";
+        settings = {
+          # font.normal.family = "Overpass Mono";
+          colors = {
+            primary = {
+              background = cfg.colors.background;
+              foreground = cfg.colors.foreground;
+            };
+            normal = {
+              black = "0x000000";
+              red = "0xff5555";
+              green = cfg.colors.green;
+              yellow = "0xf1fa8c";
+              blue = "0xbd93f9";
+              magenta = "0xff79c6";
+              cyan = "0x8be9fd";
+              white = "0xbbbbbb";
+            };
+            bright = {
+              black = "0x555555";
+              red = "0xff5555";
+              green = "0x50fa7b";
+              yellow = "0xf1fa8c";
+              blue = "0xbd93f9";
+              magenta = "0xff79c6";
+              cyan = "0x8be9fd";
+              white = "0xffffff";
+            };
           };
-          normal = {
-            black = "0x000000";
-            red = "0xff5555";
-            green = "0x50fa7b";
-            yellow = "0xf1fa8c";
-            blue = "0xbd93f9";
-            magenta = "0xff79c6";
-            cyan = "0x8be9fd";
-            white = "0xbbbbbb";
+        };
+      };
+
+      services.dunst = {
+        settings = {
+          enable = true;
+          global = {
+            font = "monospace 24";
+            alignment = "left";
+            indicate_hidden = "yes";
+            format = "<b>%a: %s</b>\\n%b";
+            sticky_history = "yes";
+            geometry = "1000x1000-30+20";
+            shrink = "yes";
+            word_wrap = "yes";
+            notification_height = "0";
+            markup = "full";
           };
-          bright = {
-            black = "0x555555";
-            red = "0xff5555";
-            green = "0x50fa7b";
-            yellow = "0xf1fa8c";
-            blue = "0xbd93f9";
-            magenta = "0xff79c6";
-            cyan = "0x8be9fd";
-            white = "0xffffff";
+          urgency_low = {
+            background = "#282c34";
+            foreground = "#0979f9";
+            timeout = "10";
+          };
+          urgency_normal = {
+            background = "#282c34";
+            foreground = "#abb2bf";
+            timeout = "10";
+          };
+          urgency_critical = {
+            background = "#1b182c";
+            foreground = "#ff8080";
+            timeout = "5";
+          };
+          shortcuts = {
+            close = "mod4+backslash";
+            close_all = "mod4+space+backslash";
+            context = "mod4+slash";
           };
         };
       };
@@ -133,11 +208,11 @@ in
 
     # for more packages, see default.nix
     environment.systemPackages = with pkgs; [
-      firefox
-      vscode
+      firefox-wayland
+      ajanse-vscode
       (import ../pkgs/sublime-merge).sublimeMerge
-      freeoffice
-      (pkgs.callPackage (import ../pkgs/discord) {})
+      # freeoffice
+      #      (pkgs.callPackage (import ../pkgs/discord) {})
       spotify
       evince
       okular
@@ -165,12 +240,29 @@ in
 
       cava
 
-      qemu
+(
+      pkgs.writeTextFile {
+        name = "startsway";
+        destination = "/bin/startsway";
+        executable = true;
+        text = ''
+          #! ${pkgs.bash}/bin/bash
+
+          # first import environment variables from the login manager
+          systemctl --user import-environment
+          # then start the service
+          exec systemctl --user start sway.service
+        '';
+      }
+    )
     ];
 
     nixpkgs.overlays = [
       (
-        self: super: {
+        self: super: rec {
+          ajanse-vscode = super.vscode-with-extensions.override {
+            vscodeExtensions = with super.vscode-extensions; [ ms-vscode.cpptools ];
+          };
           signal-desktop = super.signal-desktop.overrideAttrs (
             oldAttrs: rec {
               preFixup = oldAttrs.preFixup + ''

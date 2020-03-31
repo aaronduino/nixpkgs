@@ -1,11 +1,50 @@
-{ pname, version, src, binaryName, desktopName
-, stdenv, fetchurl, makeDesktopItem, wrapGAppsHook
-, alsaLib, atk, at-spi2-atk, at-spi2-core, cairo, cups, dbus, expat, fontconfig, freetype
-, gdk-pixbuf, glib, gtk3, libnotify, libX11, libXcomposite, libXcursor, libXdamage, libuuid
-, libXext, libXfixes, libXi, libXrandr, libXrender, libXtst, nspr, nss, libxcb
-, pango, systemd, libXScrnSaver, libcxx, libpulseaudio
+{ pname
+, version
+, src
+, binaryName
+, desktopName
+, stdenv
+, fetchurl
+, makeDesktopItem
+, wrapGAppsHook
+, alsaLib
+, atk
+, at-spi2-atk
+, at-spi2-core
+, cairo
+, cups
+, dbus
+, expat
+, fontconfig
+, freetype
+, gdk-pixbuf
+, glib
+, gtk3
+, libnotify
+, libX11
+, libXcomposite
+, libXcursor
+, libXdamage
+, libuuid
+, libXext
+, libXfixes
+, libXi
+, libXrandr
+, libXrender
+, libXtst
+, nspr
+, nss
+, libxcb
+, pango
+, systemd
+, libXScrnSaver
+, libcxx
+, libpulseaudio
 , gdk_pixbuf
-, xvfb_run, callPackage, pkgs }:
+, xvfb_run
+, callPackage
+, pkgs
+}:
 
 let
   beautiful-discord = callPackage (import ./beautiful-discord.nix) {};
@@ -62,38 +101,38 @@ stdenv.mkDerivation rec {
   ];
 
   installPhase = ''
-    mkdir -p $out/{bin,opt/discord,share/pixmaps}
-    mv * $out/opt/discord
-    chmod +x $out/opt/discord/Discord
-    patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
-             $out/opt/discord/Discord
-    wrapProgram $out/opt/discord/Discord \
-      "''${gappsWrapperArgs[@]}" \
-      --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
-      --prefix LD_LIBRARY_PATH : ${libPath}
-    ln -s $out/opt/discord/Discord $out/bin/
-    ln -s $out/opt/discord/discord.png $out/share/pixmaps
-    ln -s "${desktopItem}/share/applications" $out/share/
+        mkdir -p $out/{bin,opt/discord,share/pixmaps}
+        mv * $out/opt/discord
+        chmod +x $out/opt/discord/Discord
+        patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
+                 $out/opt/discord/Discord
+        wrapProgram $out/opt/discord/Discord \
+          "''${gappsWrapperArgs[@]}" \
+          --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
+          --prefix LD_LIBRARY_PATH : ${libPath}
+        ln -s $out/opt/discord/Discord $out/bin/
+        ln -s $out/opt/discord/discord.png $out/share/pixmaps
+        ln -s "${desktopItem}/share/applications" $out/share/
 
-mv $out/bin/Discord $out/bin/.Discord
+    mv $out/bin/Discord $out/bin/.Discord
 
-cat > $out/bin/discord <<EOF
-if [ ! -d \$HOME/.config/discord ]; then
-  echo 'Ricing Discord!'
-  echo -n "Downloading modules... "
-  ${xvfb_run}/bin/xvfb-run $out/bin/.Discord &> /dev/null
-  echo "DONE"
-  echo -n "Unpacking modules... "
-  ( ${xvfb_run}/bin/xvfb-run $out/bin/.Discord &> /dev/null ) & sleep 5 ; kill $!  &> /dev/null
-  echo "DONE"
-  echo -n "Ricing... "
-  ${beautiful-discord}/bin/beautifuldiscord --css ${./custom.css} &> /dev/null
-  echo "DONE"
-fi
-$out/bin/.Discord
-EOF
+    cat > $out/bin/discord <<EOF
+    if [ ! -d \$HOME/.config/discord ]; then
+      echo 'Ricing Discord!'
+      echo -n "Downloading modules... "
+      ${xvfb_run}/bin/xvfb-run $out/bin/.Discord &> /dev/null
+      echo "DONE"
+      echo -n "Unpacking modules... "
+      ( ${xvfb_run}/bin/xvfb-run $out/bin/.Discord &> /dev/null ) & sleep 5 ; kill $!  &> /dev/null
+      echo "DONE"
+      echo -n "Ricing... "
+      ${beautiful-discord}/bin/beautifuldiscord --css ${./custom.css} &> /dev/null
+      echo "DONE"
+    fi
+    $out/bin/.Discord
+    EOF
 
-chmod +x $out/bin/discord
+    chmod +x $out/bin/discord
   '';
 
   desktopItem = makeDesktopItem {

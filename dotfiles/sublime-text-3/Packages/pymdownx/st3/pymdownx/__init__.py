@@ -1,0 +1,1 @@
+/nix/store/gvmyfh200hjm8vngxlsqvms9lvsgrlwq-home-manager-files/.config/sublime-text-3/Packages/pymdownx/st3/pymdownx/__init__.py

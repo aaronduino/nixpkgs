@@ -10,6 +10,14 @@ in
   imports = [
     ./options.nix
   ];
+
+  #  services.vsliveshare = {
+  #    enable = true;
+  #    enableWritableWorkaround = true;
+  #    enableDiagnosticsWorkaround = true;
+  #    extensionsDir = "/home/ajanse/.vscode/extensions";
+  #  };
+
   config = {
     home-manager.users = let
       dotfiles = isRoot: {
@@ -29,6 +37,9 @@ in
 
           [credential]
           helper=libsecret
+
+          [merge]
+          conflictstyle=diff3
 
           [gpg]
           program=${pkgs.gnupg}/bin/gpg2
