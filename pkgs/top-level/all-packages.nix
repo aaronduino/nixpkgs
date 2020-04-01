@@ -10039,6 +10039,8 @@ in
 
   guile-fibers = callPackage ../development/guile-modules/guile-fibers { };
 
+  guile-gcrypt = callPackage ../development/guile-modules/guile-gcrypt { };
+
   guile-gnome = callPackage ../development/guile-modules/guile-gnome {
     gconf = gnome2.GConf;
     guile = guile_2_0;
