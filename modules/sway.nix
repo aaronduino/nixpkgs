@@ -22,7 +22,7 @@ in {
 
     home-manager.users."${cfg.username}" = {
       wayland.windowManager.sway = {
-enable = true;
+enable = false;
 config = {
   modifier = "Mod4";
 };

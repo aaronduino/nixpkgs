@@ -4,7 +4,7 @@ let
   cfg = config.vars;
   # sublime scaling is broken for root
   patchSublimeScale = isRoot: settings:
-    settings // (if false then { ui_scale = null; } else {});
+    settings // (if isRoot then { ui_scale = null; } else {});
 in
 {
   imports = [

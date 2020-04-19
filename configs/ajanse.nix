@@ -41,7 +41,7 @@ in
     username = "ajanse";
     hostname = "xps-ajanse";
 
-    gui = "sway";
+    gui = "i3";
 
     # for git
     name = "Aaron Janse";

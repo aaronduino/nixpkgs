@@ -16,22 +16,22 @@ in
   config = mkIf (cfg.gui != "none") {
 
 
-    # services.xserver = {
-    #   enable = true;
+    services.xserver = {
+      enable = true;
 
-    #   # auto login
-    #   displayManager.lightdm.autoLogin = {
-    #     enable = true;
-    #     user = cfg.username;
-    #   };
+      # auto login
+      displayManager.lightdm.autoLogin = {
+        enable = true;
+        user = cfg.username;
+      };
 
 
-    #   #displayManager.sessionCommands = ''
-    #   #  ${pkgs.xorg.xrdb}/bin/xrdb -merge <<EOF
-    #   #    Xft.dpi: 192
-    #   #  EOF
-    #   #'';
-    # };
+      #displayManager.sessionCommands = ''
+      #  ${pkgs.xorg.xrdb}/bin/xrdb -merge <<EOF
+      #    Xft.dpi: 192
+      #  EOF
+      #'';
+    };
 
     systemd.services = {
       status-bar = {
@@ -95,14 +95,14 @@ in
     };
 
     home-manager.users.${cfg.username} = {
-      # xsession = {
-      #   enable = cfg.gui == "i3";
-      #   pointerCursor = {
-      #     name = "Vanilla-DMZ";
-      #     package = pkgs.vanilla-dmz;
-      #     size = 128;
-      #   };
-      # };
+      xsession = {
+        enable = cfg.gui == "i3";
+        pointerCursor = {
+          name = "Vanilla-DMZ";
+          package = pkgs.vanilla-dmz;
+          size = 128;
+        };
+      };
       programs.rofi = {
         enable = cfg.gui == "i3" || cfg.gui == "bspwn";
         fullscreen = false;
@@ -208,11 +208,13 @@ in
 
     # for more packages, see default.nix
     environment.systemPackages = with pkgs; [
-      firefox-wayland
-      ajanse-vscode
+      firefox
+      # ajanse-vscode
+      vscode
       (import ../pkgs/sublime-merge).sublimeMerge
       # freeoffice
       #      (pkgs.callPackage (import ../pkgs/discord) {})
+      discord
       spotify
       evince
       okular
@@ -239,22 +241,6 @@ in
       signal-desktop
 
       cava
-
-(
-      pkgs.writeTextFile {
-        name = "startsway";
-        destination = "/bin/startsway";
-        executable = true;
-        text = ''
-          #! ${pkgs.bash}/bin/bash
-
-          # first import environment variables from the login manager
-          systemctl --user import-environment
-          # then start the service
-          exec systemctl --user start sway.service
-        '';
-      }
-    )
     ];
 
     nixpkgs.overlays = [
