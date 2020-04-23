@@ -12,6 +12,7 @@ with lib;
 
     hidpi = mkOption {
       type = types.bool;
+      default = false;
     };
 
     hostname = mkOption {

@@ -54,7 +54,7 @@ in
     yubikey = true;
 
     latex = true;
-    # enableVPN = true;
+    enableVPN = false;
 
     secrets = ../secrets/ajanse;
   };
