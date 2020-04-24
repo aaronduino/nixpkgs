@@ -79,9 +79,7 @@ let
   audio = optionalString (hasSuffix "linux" stdenv.hostPlatform.system) "alsa,"
   + optionalString pulseSupport "pa,"
   + optionalString sdlSupport "sdl,";
-
 in
-
 stdenv.mkDerivation rec {
   version = "4.1.0";
   pname = "qemu"

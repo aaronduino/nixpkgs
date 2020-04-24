@@ -5,7 +5,6 @@
 #, xvfb_run, dbus, shared-mime-info, libunwind, glib-networking }:
 
 with import <nixpkgs> {};
-
 let
   version = "1.1.3";
 

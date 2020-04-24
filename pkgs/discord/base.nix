@@ -45,7 +45,6 @@
 , callPackage
 , pkgs
 }:
-
 let
   beautiful-discord = callPackage (import ./beautiful-discord.nix) {};
 in

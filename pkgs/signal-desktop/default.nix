@@ -61,7 +61,6 @@ let
     udev
     xorg.libxcb
   ];
-
 in
 stdenv.mkDerivation rec {
   name = "signal-desktop-${version}";

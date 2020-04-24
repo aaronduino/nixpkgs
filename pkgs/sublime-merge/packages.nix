@@ -65,29 +65,29 @@ let
     '';
   };
 in
-  stdenv.mkDerivation (
-    rec {
-      name = "sublimemerge-${buildVersion}";
-      phases = [ "installPhase" ];
-      inherit sublimeMerge;
-      installPhase = ''
-        mkdir -p $out/bin
-        cat > $out/bin/smerge <<-EOF
-        #!/bin/sh
-        exec $sublimeMerge/sublime_merge "\$@"
-        EOF
-        chmod +x $out/bin/smerge
-        ln $out/bin/smerge $out/bin/sublime_merge
-        ln $out/bin/smerge $out/bin/sublimeMerge
-        mkdir -p $out/share/applications
-        ln -s $sublimeMerge/sublime_merge.desktop $out/share/applications/sublime_merge.desktop
-        ln -s $sublimeMerge/Icon/256x256/ $out/share/icons
-      '';
-      meta = with stdenv.lib; {
-        description = "Meet a new Git client, from the makers of Sublime Text";
-        homepage = https://www.sublimemerge.com/;
-        license = licenses.unfree;
-        platforms = [ "x86_64-linux" ];
-      };
-    }
-  )
+stdenv.mkDerivation (
+  rec {
+    name = "sublimemerge-${buildVersion}";
+    phases = [ "installPhase" ];
+    inherit sublimeMerge;
+    installPhase = ''
+      mkdir -p $out/bin
+      cat > $out/bin/smerge <<-EOF
+      #!/bin/sh
+      exec $sublimeMerge/sublime_merge "\$@"
+      EOF
+      chmod +x $out/bin/smerge
+      ln $out/bin/smerge $out/bin/sublime_merge
+      ln $out/bin/smerge $out/bin/sublimeMerge
+      mkdir -p $out/share/applications
+      ln -s $sublimeMerge/sublime_merge.desktop $out/share/applications/sublime_merge.desktop
+      ln -s $sublimeMerge/Icon/256x256/ $out/share/icons
+    '';
+    meta = with stdenv.lib; {
+      description = "Meet a new Git client, from the makers of Sublime Text";
+      homepage = https://www.sublimemerge.com/;
+      license = licenses.unfree;
+      platforms = [ "x86_64-linux" ];
+    };
+  }
+)

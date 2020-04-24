@@ -37,7 +37,7 @@ in
       status-bar = {
         description = "Graphical status bar";
         wantedBy = [ "graphical-session.target" ];
-        after    = [ "graphical-session.target" ];
+        after = [ "graphical-session.target" ];
         serviceConfig.ExecStart = ''
         '';
       };

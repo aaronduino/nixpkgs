@@ -2,7 +2,8 @@
 with lib;
 let
   cfg = config.vars;
-in {
+in
+{
   imports = [
     ./options.nix
   ];
@@ -22,11 +23,11 @@ in {
 
     home-manager.users."${cfg.username}" = {
       wayland.windowManager.sway = {
-enable = false;
-config = {
-  modifier = "Mod4";
-};
-};
+        enable = false;
+        config = {
+          modifier = "Mod4";
+        };
+      };
     };
   };
 }

@@ -1,5 +1,4 @@
 with import <nixpkgs> {};
-
 let
   withALSA = false;
   withPulseAudio = true;

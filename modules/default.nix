@@ -28,7 +28,7 @@ in
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
-  services.journald.extraConfig = ''MaxRetentionSec=1week''; 
+  services.journald.extraConfig = ''MaxRetentionSec=1week'';
 
 
   boot.cleanTmpDir = true;
