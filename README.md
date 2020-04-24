@@ -9,25 +9,6 @@
   <img src="./screenshots/htop.png" width="400" />
 </p>
 
-
-## Organization
-
-`assets` - images etc  
-`bin` - scripts  
-`configs` - users' high-level configs  
-`dotfiles` - static dotfiles linked into home directories  
-`hardware` - machine-specific configuration  
-`modules` - the bulk of config implementation  
-`personal` - TODO: remove this   
-`pkgs` - custom packages  
-`screenshots` - for this readme  
-`secrets` - encrypted passwords etc  
-`wip` - work-in-progress changes to this project
-
-## Creating a user
-
-TODO
-
 ## Generating ISO
 
 Install [nixos-generators](https://github.com/nix-community/nixos-generators)
