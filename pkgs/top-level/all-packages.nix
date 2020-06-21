@@ -11999,6 +11999,7 @@ in
     else if name == "libSystem" then targetPackages.darwin.xcode
     else if name == "nblibc" then targetPackages.netbsdCross.libc
     else if name == "wasilibc" then targetPackages.wasilibc or wasilibc
+    else if name == "relibc" then targetPackages.relibc or relibc
     else if stdenv.targetPlatform.isGhcjs then null
     else throw "Unknown libc ${name}";
 
@@ -12010,6 +12011,10 @@ in
     else null;
 
   wasilibc = callPackage ../development/libraries/wasilibc {
+    stdenv = crossLibcStdenv;
+  };
+
+  relibc = callPackage ../development/libraries/relibc {
     stdenv = crossLibcStdenv;
   };
 
