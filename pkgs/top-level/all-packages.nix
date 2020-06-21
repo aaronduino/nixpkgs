@@ -2222,6 +2222,8 @@ in
 
   razergenie = libsForQt5.callPackage ../applications/misc/razergenie { };
 
+  redoxPkgs = callPackage ../development/redox-pkgs { };
+
   ring-daemon = callPackage ../applications/networking/instant-messengers/ring-daemon { };
 
   riot-desktop = callPackage ../applications/networking/instant-messengers/riot/riot-desktop.nix { };
@@ -3825,6 +3827,9 @@ in
              gnused_422;
   # This is an easy work-around for [:space:] problems.
   gnused_422 = callPackage ../tools/text/gnused/422.nix { };
+
+  sedtwo = callPackage ../tools/sedtwo { };
+
 
   gnutar = callPackage ../tools/archivers/gnutar { };
 
@@ -11999,6 +12004,7 @@ in
     else if name == "libSystem" then targetPackages.darwin.xcode
     else if name == "nblibc" then targetPackages.netbsdCross.libc
     else if name == "wasilibc" then targetPackages.wasilibc or wasilibc
+    else if name == "relibc" then targetPackages.relibc or relibc
     else if stdenv.targetPlatform.isGhcjs then null
     else throw "Unknown libc ${name}";
 
@@ -12012,6 +12018,9 @@ in
   wasilibc = callPackage ../development/libraries/wasilibc {
     stdenv = crossLibcStdenv;
   };
+
+  relibc = assert stdenv.hostPlatform.useRedoxPrebuilt;
+    pkgs.redoxPkgs.libraries;
 
   # Only supported on Linux, using glibc
   glibcLocales = if stdenv.hostPlatform.libc == "glibc" then callPackage ../development/libraries/glibc/locales.nix { } else null;

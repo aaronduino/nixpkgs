@@ -48,6 +48,7 @@ rec {
     isWasi         = { kernel = kernels.wasi; };
     isGhcjs        = { kernel = kernels.ghcjs; };
     isGenode       = { kernel = kernels.genode; };
+    isRedox        = { kernel = kernels.redox; };
     isNone         = { kernel = kernels.none; };
 
     isAndroid      = [ { abi = abis.android; } { abi = abis.androideabi; } ];

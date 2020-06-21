@@ -37,6 +37,8 @@ let
     "js-ghcjs"
 
     "aarch64-genode" "x86_64-genode"
+
+    "x86_64-redox"
   ];
 
   allParsed = map parse.mkSystemFromString all;
@@ -71,6 +73,7 @@ in {
   wasi    = filterDoubles predicates.isWasi;
   windows = filterDoubles predicates.isWindows;
   genode  = filterDoubles predicates.isGenode;
+  redox   = filterDoubles predicates.isRedox;
 
   embedded = filterDoubles predicates.isNone;
 

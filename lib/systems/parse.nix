@@ -280,6 +280,7 @@ rec {
     windows = { execFormat = pe;      families = { }; };
     ghcjs   = { execFormat = unknown; families = { }; };
     genode  = { execFormat = elf;     families = { }; };
+    redox  = { execFormat = elf;     families = { }; };
   } // { # aliases
     # 'darwin' is the kernel for all of them. We choose macOS by default.
     darwin = kernels.macos;
@@ -397,6 +398,8 @@ rec {
       else if (elemAt l 2 == "ghcjs")
         then { cpu = elemAt l 0; vendor = "unknown"; kernel = elemAt l 2; }
       else if hasPrefix "genode" (elemAt l 2)
+        then { cpu = elemAt l 0; vendor = elemAt l 1; kernel = elemAt l 2; }
+      else if (elemAt l 2 == "redox")
         then { cpu = elemAt l 0; vendor = elemAt l 1; kernel = elemAt l 2; }
       else throw "Target specification with 3 components is ambiguous";
     "4" =    { cpu = elemAt l 0; vendor = elemAt l 1; kernel = elemAt l 2; abi = elemAt l 3; };

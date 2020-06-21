@@ -55,6 +55,8 @@ in lib.init bootStages ++ [
 
       cc = if crossSystem.useiOSPrebuilt or false
              then buildPackages.darwin.iosSdkPkgs.clang
+           else if crossSystem.useRedoxPrebuilt or false
+             then buildPackages.redoxPkgs.clang
            else if crossSystem.useAndroidPrebuilt or false
              then buildPackages."androidndkPkgs_${crossSystem.ndkVer}".clang
            else if targetPlatform.isGhcjs

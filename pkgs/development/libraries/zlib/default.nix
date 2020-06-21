@@ -53,8 +53,9 @@ stdenv.mkDerivation (rec {
   # Of these, we choose `--shared`, only because that's
   # what we did in the past and we can avoid mass rebuilds this way.
   # As a result, we pass `--static` only when we want just static.
-  configureFlags = stdenv.lib.optional (static && !shared) "--static"
-                   ++ stdenv.lib.optional shared "--shared";
+  configureFlags = if stdenv.targetPlatform.isRedox then "--static"
+    else (stdenv.lib.optional (static && !shared) "--static"
+          ++ stdenv.lib.optional shared "--shared");
 
   # Note we don't need to set `dontDisableStatic`, because static-disabling
   # works by grepping for `enable-static` in the `./configure` script
@@ -117,7 +118,7 @@ stdenv.mkDerivation (rec {
     homepage = "https://zlib.net";
     description = "Lossless data-compression library";
     license = licenses.zlib;
-    platforms = platforms.all;
+    platforms = platforms.all ++ platforms.redox;
   };
 } // stdenv.lib.optionalAttrs (stdenv.hostPlatform != stdenv.buildPlatform) {
   preConfigure = ''
