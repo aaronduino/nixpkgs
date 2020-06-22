@@ -12014,9 +12014,7 @@ in
     stdenv = crossLibcStdenv;
   };
 
-  relibc = callPackage ../development/libraries/relibc {
-    stdenv = crossLibcStdenv;
-  };
+  relibc = import ../development/libraries/relibc;
 
   # Only supported on Linux, using glibc
   glibcLocales = if stdenv.hostPlatform.libc == "glibc" then callPackage ../development/libraries/glibc/locales.nix { } else null;
