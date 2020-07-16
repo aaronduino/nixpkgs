@@ -1,7 +1,42 @@
-{ stdenv, fetchurl, m4
-, cxx ? !stdenv.hostPlatform.useAndroidPrebuilt && !stdenv.hostPlatform.isWasm
+{ stdenv, fetchurl, m4, lib
+, cxx ? !stdenv.hostPlatform.useAndroidPrebuilt && !stdenv.hostPlatform.isWasm && !stdenv.hostPlatform.isRedox
 , buildPackages
 , withStatic ? false }:
+
+if (stdenv.hostPlatform.isRedox) then
+
+  stdenv.mkDerivation {
+    pname = "gmp";
+    version = "6.17777.0";
+
+    src = fetchurl {
+      url = ftp://gcc.gnu.org/pub/gcc/infrastructure/gmp-6.1.0.tar.bz2;
+      sha256 = "1s3kddydvngqrpc6i1vbz39raya2jdcl042wi0ksbszgjjllk129";
+    };
+
+    patches = [./redox.patch];
+
+    depsBuildBuild = [ buildPackages.stdenv.cc ];
+    nativeBuildInputs = [ m4 ];
+
+    dontDisableStatic = true;
+
+    configurePlatforms = [ "build" "host" ];
+
+    meta = {
+      
+      platforms =
+        stdenv.lib.platforms.linux ++
+        stdenv.lib.platforms.freebsd ++
+        stdenv.lib.platforms.illumos ++
+        stdenv.lib.platforms.darwin ++
+        stdenv.lib.platforms.redox;
+    };
+  }
+
+
+
+else
 
 let inherit (stdenv.lib) optional; in
 

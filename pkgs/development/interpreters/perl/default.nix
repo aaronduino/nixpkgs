@@ -31,9 +31,13 @@ let
     patches =
       [
         # Do not look in /usr etc. for dependencies.
-        (if (versionOlder version "5.29.6") then ./no-sys-dirs-5.26.patch
-         else if (versionOlder version "5.31.1") then ./no-sys-dirs-5.29.patch
-         else ./no-sys-dirs-5.31.patch)
+        # (if (versionOlder version "5.29.6") then ./no-sys-dirs-5.26.patch
+        #  else if (versionOlder version "5.31.1") then ./no-sys-dirs-5.29.patch
+        #  else ./no-sys-dirs-5.31.patch)
+         (if (versionAtLeast version "5.31.1") then ./no-sys-dirs-5.31.patch
+         else if (versionAtLeast version "5.29.6") then ./no-sys-dirs-5.29.patch
+         else if (versionAtLeast version "5.26") then ./no-sys-dirs-5.26.patch
+         else ./no-sys-dirs.patch)
       ]
       ++ optional (versionOlder version "5.29.6")
         # Fix parallel building: https://rt.perl.org/Public/Bug/Display.html?id=132360
@@ -43,11 +47,12 @@ let
         })
       ++ optional stdenv.isSunOS ./ld-shared.patch
       ++ optionals stdenv.isDarwin [ ./cpp-precomp.patch ./sw_vers.patch ]
-      ++ optional crossCompiling ./MakeMaker-cross.patch;
+      ++ optional crossCompiling ./MakeMaker-cross.patch
+      ++ optional stdenv.hostPlatform.isRedox ./redox.patch;
 
     # This is not done for native builds because pwd may need to come from
     # bootstrap tools when building bootstrap perl.
-    postPatch = (if crossCompiling then ''
+    postPatch = (if (crossCompiling && !stdenv.hostPlatform.isRedox) then ''
       substituteInPlace dist/PathTools/Cwd.pm \
         --replace "/bin/pwd" '${coreutils}/bin/pwd'
       substituteInPlace cnf/configure_tool.sh --replace "cc -E -P" "cc -E"
@@ -191,6 +196,13 @@ let
   });
 in {
   # Maint version
+  perl524 = common {
+    perl = pkgs.perl524;
+    buildPerl = buildPackages.perl524;
+    version = "5.24.2";
+    sha256 = "1x4yj814a79lcarwb3ab6bbcb36hvb5n4ph4zg3yb0nabsjfi6v0";
+  };
+  
   perl528 = common {
     perl = pkgs.perl528;
     buildPerl = buildPackages.perl528;

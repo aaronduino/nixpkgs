@@ -65,7 +65,7 @@ let majorVersion = "6";
     inherit (stdenv) buildPlatform hostPlatform targetPlatform;
 
     patches =
-      [ ../use-source-date-epoch.patch ]
+      (if stdenv.targetPlatform.isRedox then [] else [ ../use-source-date-epoch.patch ])
       ++ optional (targetPlatform != hostPlatform) ../libstdc++-target.patch
       ++ optional noSysDirs ../no-sys-dirs.patch
       ++ optional langAda ../gnat-cflags.patch
@@ -120,6 +120,9 @@ stdenv.mkDerivation ({
     repo = "gcc-vc4";
     rev = "e90ff43f9671c760cf0d1dd62f569a0fb9bf8918";
     sha256 = "0gxf66hwqk26h8f853sybphqa5ca0cva2kmrw5jsiv6139g0qnp8";
+  } else if stdenv.targetPlatform.isRedox then fetchGit {
+    url = https://gitlab.redox-os.org/redox-os/gcc;
+    rev = "f360ac095028d286fc6dde4d02daed48f59813fa";
   } else fetchurl {
     url = "mirror://gnu/gcc/gcc-${version}/gcc-${version}.tar.xz";
     sha256 = "0i89fksfp6wr1xg9l8296aslcymv2idn60ip31wr9s4pwin7kwby";
@@ -182,7 +185,7 @@ stdenv.mkDerivation ({
   nativeBuildInputs = [ texinfo which gettext ]
     ++ (optional (perl != null) perl)
     ++ (optional javaAwtGtk pkgconfig)
-    ++ (optional (stdenv.targetPlatform.isVc4) flex);
+    ++ (optional (stdenv.targetPlatform.isVc4 || stdenv.targetPlatform.isRedox) flex);
 
   # For building runtime libs
   depsBuildTarget =
@@ -219,7 +222,11 @@ stdenv.mkDerivation ({
   # TODO(@Ericson2314): Always pass "--target" and always prefix.
   configurePlatforms = [ "build" "host" ] ++ stdenv.lib.optional (targetPlatform != hostPlatform) "target";
 
-  configureFlags = import ../common/configure-flags.nix {
+  configureFlags = [
+    # "--with-sysroot"
+    # "--with-build-sysroot=${relibc}/x86_64-unknown-redox"
+    # "--with-native-system-header-dir=${relibc}/x86_64-unknown-redox/include"
+  ] ++ import ../common/configure-flags.nix {
     inherit
       stdenv
       targetPackages
@@ -327,7 +334,8 @@ stdenv.mkDerivation ({
       stdenv.lib.platforms.linux ++
       stdenv.lib.platforms.freebsd ++
       stdenv.lib.platforms.illumos ++
-      stdenv.lib.platforms.darwin;
+      stdenv.lib.platforms.darwin ++
+      stdenv.lib.platforms.redox;
   };
 }
 

@@ -13,7 +13,10 @@ let
     pname = "openssl";
     inherit version;
 
-    src = fetchurl {
+    src = if stdenv.targetPlatform.isRedox then fetchGit {
+      url = "https://gitlab.redox-os.org/redox-os/openssl";
+      rev = "0453163e9a9052884cce288ff3e2acb77725a239";
+    } else fetchurl {
       url = "https://www.openssl.org/source/${pname}-${version}.tar.gz";
       inherit sha256;
     };
@@ -52,6 +55,7 @@ let
         x86_64-darwin  = "./Configure darwin64-x86_64-cc";
         x86_64-linux = "./Configure linux-x86_64";
         x86_64-solaris = "./Configure solaris64-x86_64-gcc";
+        x86_64-redox = "./Configure redox-x86_64";
       }.${stdenv.hostPlatform.system} or (
         if stdenv.hostPlatform == stdenv.buildPlatform
           then "./config"

@@ -24,7 +24,10 @@ in stdenv.mkDerivation rec {
   pname = "rustc";
   inherit version;
 
-  src = fetchurl {
+  src = if stdenv.targetPlatform.isRedox then fetchGit {
+    url = "https://gitlab.redox-os.org/redox-os/rust";
+    rev = "57cf5eabfda7e4a3182559159f98b95bf9085826";
+  } else fetchurl {
     url = "https://static.rust-lang.org/dist/rustc-${version}-src.tar.gz";
     inherit sha256;
   };
@@ -165,6 +168,6 @@ in stdenv.mkDerivation rec {
     description = "A safe, concurrent, practical language";
     maintainers = with maintainers; [ madjar cstrahan globin havvy ];
     license = [ licenses.mit licenses.asl20 ];
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = platforms.linux ++ platforms.darwin ++ platforms.redox;
   };
 }
