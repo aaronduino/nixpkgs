@@ -1,5 +1,6 @@
 { stdenv, removeReferencesTo, pkgsBuildBuild, pkgsBuildHost, pkgsBuildTarget
-, fetchurl, file, python3
+, lib
+, fetchurl, fetchgit, file, python3
 , llvm_9, darwin, cmake, rust, rustPlatform
 , pkgconfig, openssl
 , which, libffi
@@ -8,6 +9,9 @@
 , version
 , sha256
 , patches ? []
+, curl
+
+, rustInputThing ? null
 }:
 
 let
@@ -24,7 +28,20 @@ in stdenv.mkDerivation rec {
   pname = "rustc";
   inherit version;
 
-  src = fetchurl {
+  # buildPackages.fetchgit required building a bunch of stuff; is there something like nativePackages?
+  src = if (stdenv.targetPlatform.isRedox && false) then 
+  
+  # fetchgit {
+  #   url = "https://gitlab.redox-os.org/aaronjanse/rust";
+  #   rev = "4e16338cad6d408563e20afe3027afd478ae8dc6";
+  #   sha256 = "12hvglr9f08x8dfkx1k5q3393cgnvmsh7fbzlp36agc1x5993h0p";
+  # } 
+  /home/ajanse/redox/rust-vendored
+  # # ^ CHANGES:
+  # #   - `cargo vendor` stuff with internet connection
+  # #   - src/libcore/ops/function.rs (remove `not(bootstrap), `)
+  # #     227:    #[cfg_attr(not(bootstrap), lang = "fn_once_output")]
+  else fetchurl {
     url = "https://static.rust-lang.org/dist/rustc-${version}-src.tar.gz";
     inherit sha256;
   };
@@ -66,10 +83,9 @@ in stdenv.mkDerivation rec {
     cxxForTarget = "${pkgsBuildTarget.targetPackages.stdenv.cc}/bin/${pkgsBuildTarget.targetPackages.stdenv.cc.targetPrefix}c++";
   in [
     "--release-channel=stable"
-    "--set=build.rustc=${rustPlatform.rust.rustc}/bin/rustc"
-    "--set=build.cargo=${rustPlatform.rust.cargo}/bin/cargo"
+    "--set=build.rustc=${rustPlatform.rustc}/bin/rustc"
+    "--set=build.cargo=${rustPlatform.cargo}/bin/cargo"
     "--enable-rpath"
-    "--enable-vendor"
     "--build=${rust.toRustTarget stdenv.buildPlatform}"
     "--host=${rust.toRustTarget stdenv.hostPlatform}"
     "--target=${rust.toRustTarget stdenv.targetPlatform}"
@@ -90,9 +106,9 @@ in stdenv.mkDerivation rec {
     "${setBuild}.llvm-config=${llvmSharedForBuild}/bin/llvm-config"
     "${setHost}.llvm-config=${llvmSharedForHost}/bin/llvm-config"
     "${setTarget}.llvm-config=${llvmSharedForTarget}/bin/llvm-config"
-  ] ++ optionals stdenv.isLinux [
+  ] ++ optionals (stdenv.isLinux && !stdenv.targetPlatform.isRedox) [
     "--enable-profiler" # build libprofiler_builtins
-  ];
+  ] ++ optional (true) "--enable-vendor";
 
   # The bootstrap.py will generated a Makefile that then executes the build.
   # The BOOTSTRAP_ARGS used by this Makefile must include all flags to pass
@@ -101,6 +117,28 @@ in stdenv.mkDerivation rec {
     substituteInPlace Makefile \
       --replace 'BOOTSTRAP_ARGS :=' 'BOOTSTRAP_ARGS := --jobs $(NIX_BUILD_CORES)'
   '';
+  #   export VERBOSE=1
+
+  #   cp -r ${fetchGit {
+  #     url = "https://gitlab.redox-os.org/redox-os/liblibc";
+  #     rev = "ac65670b09788e760603de2c153b993050ed23a5";
+  #   }} src/liblibc
+
+  #   chmod +rw -R src/liblibc
+
+  #   sed -i 's#git = "https://gitlab.redox-os.org/redox-os/liblibc.git", branch = "redox"#path="src/liblibc"#' Cargo.toml
+  #   sed -i 's/\#\!\[deny(warnings)\]//g' src/bootstrap/lib.rs
+  #   cp ${./redox-root-Cargo.lock} ./Cargo.lock
+  #   cp ${./redox-liblibc-Cargo.lock} ./src/liblibc/Cargo.lock
+  #   chmod +rw -R .
+  #   echo 'LISTING: .'
+  #   ls .
+  #   echo 'LISTING: src/liblibc'
+  #   ls src/liblibc
+  #   echo 'LISTING: src/bootstrap'
+  #   ls src/bootstrap
+  #   echo '###########'
+  # '';
 
   # the rust build system complains that nix alters the checksums
   dontFixLibtool = true;
@@ -118,6 +156,24 @@ in stdenv.mkDerivation rec {
 
     # Useful debugging parameter
     # export VERBOSE=1
+  '' + lib.optionalString stdenv.targetPlatform.isRedox ''
+    # cp ${./redox-libc-Cargo.lock} src/libc/Cargo.lock
+
+    # export VERBOSE=1
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # echo '######################'
+    # ls src/bootstrap/
+
+    # cat configure
+
+    # sed -i 's/^rustfmt:/#rustfmt:/g' src/stage0.txt
+    # head -50 src/stage0.txt
   '';
 
   # rustc unfortunately needs cmake to compile llvm-rt but doesn't
@@ -125,9 +181,11 @@ in stdenv.mkDerivation rec {
   dontUseCmakeConfigure = true;
 
   nativeBuildInputs = [
-    file python3 rustPlatform.rust.rustc cmake
+    file python3 cmake
     which libffi removeReferencesTo pkgconfig
-  ];
+  ] ++ (if (stdenv.targetPlatform.isRedox && false) then [
+    rustInputThing
+  ] else [rustPlatform.rustc]);
 
   buildInputs = [ openssl ]
     ++ optional stdenv.isDarwin Security
@@ -135,6 +193,8 @@ in stdenv.mkDerivation rec {
 
   outputs = [ "out" "man" "doc" ];
   setOutputFlags = false;
+
+  doCheck = !stdenv.targetPlatform.isRedox;
 
   postInstall = stdenv.lib.optionalString enableRustcDev ''
     # install rustc-dev components. Necessary to build rls, clippy...
@@ -168,3 +228,5 @@ in stdenv.mkDerivation rec {
     platforms = platforms.linux ++ platforms.darwin;
   };
 }
+# // (if stdenv.targetPlatform.isRedox then {RUSTC_BOOTSTRAP=1;} else {})
+

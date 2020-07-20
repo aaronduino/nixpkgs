@@ -15,6 +15,8 @@ stdenv.mkDerivation {
   nativeBuildInputs = [ perl ];
   outputs = [ "out" "info" ]; # the man pages are rather small
 
+  patches = if stdenv.hostPlatform.isRedox then [./redox.patch] else [];
+
   buildInputs = [ pcre libiconv ];
 
   # cygwin: FAIL: multibyte-white-space

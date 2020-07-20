@@ -19,8 +19,12 @@ stdenv.mkDerivation {
     inherit (s) url sha256;
   };
   makeFlags = [
-    ''DESTDIR=$(out)''
+    ''DESTDIR=$(out)'' "CC=x86_64-unknown-redox-gcc"
   ];
+  preBuild = ''
+    sed -i 's:/usr/\w\+/ncurses:${ncurses}:g' Makefile
+    echo ${ncurses}
+  '';
   preInstall = ''
     mkdir -p "$out"/{share/man,bin}
   '';
@@ -29,7 +33,7 @@ stdenv.mkDerivation {
     description = ''Console implementation of 2048 game'';
     license = stdenv.lib.licenses.bsd2;
     maintainers = [stdenv.lib.maintainers.raskin];
-    platforms = stdenv.lib.platforms.linux;
+    platforms = stdenv.lib.platforms.linux ++ stdenv.lib.platforms.redox;
     homepage = "http://www.dettus.net/n2048/";
   };
 }

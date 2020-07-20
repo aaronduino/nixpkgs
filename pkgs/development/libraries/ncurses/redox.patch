@@ -1,0 +1,12 @@
+diff --git a/include/ncurses_defs b/include/ncurses_defs
+index a54a601..989de4d 100644
+--- a/include/ncurses_defs
++++ b/include/ncurses_defs
+@@ -175,7 +175,6 @@ HAVE_TIGETNUM       1
+ HAVE_TIGETSTR  1
+ HAVE_TIMES
+ HAVE_TPUTS_SP
+-HAVE_TSEARCH
+ HAVE_TTYENT_H
+ HAVE_TYPEAHEAD 1
+ HAVE_TYPEINFO

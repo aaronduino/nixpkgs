@@ -65,6 +65,13 @@
         lib.optionalAttrs (stdenv.buildPlatform == stdenv.hostPlatform)
           (selectRustPackage buildPackages).packages.prebuilt);
       bootRustPlatform = makeRustPlatform bootstrapRustPackages;
+
+      moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+      moz_nixpkgs = import <nixpkgs> { overlays = [ moz_overlay ]; };
+      moz_rust_stuff = moz_nixpkgs.rustChannelOf { date = "2020-06-30"; channel = "nightly"; };
+      xyzBootRustPlatform = if (stdenv.targetPlatform.isRedox && false)
+        then moz_rust_stuff
+        else bootRustPlatform.rust;
     in {
       # Packages suitable for build-time, e.g. `build.rs`-type stuff.
       buildRustPackages = (selectRustPackage buildPackages).packages.stable;
@@ -78,7 +85,9 @@
         patches = rustcPatches;
 
         # Use boot package set to break cycle
-        rustPlatform = bootRustPlatform;
+        rustPlatform = xyzBootRustPlatform;
+
+        rustInputThing = if (stdenv.targetPlatform.isRedox && false) then moz_rust_stuff.rust else null;
       } // lib.optionalAttrs (stdenv.cc.isClang && stdenv.hostPlatform == stdenv.buildPlatform) {
         stdenv = llvmPackages_5.stdenv;
         pkgsBuildBuild = pkgsBuildBuild // { targetPackages.stdenv = llvmPackages_5.stdenv; };

@@ -2,17 +2,18 @@
 
 stdenv.mkDerivation rec {
   pname = "gettext";
-  version = "0.20.1";
+  version = if stdenv.hostPlatform.isRedox then "0.19.8.1" else "0.20.1";
 
   src = fetchurl {
     url = "mirror://gnu/gettext/${pname}-${version}.tar.gz";
-    sha256 = "0p3zwkk27wm2m2ccfqm57nj7vqkmfpn7ja1nf65zmhz8qqs5chb6";
+    sha256 = if stdenv.hostPlatform.isRedox then "0hsw28f9q9xaggjlsdp2qmbp2rbd1mp0njzan2ld9kiqwkq2m57z" else "0p3zwkk27wm2m2ccfqm57nj7vqkmfpn7ja1nf65zmhz8qqs5chb6";
   };
   patches = [
     ./absolute-paths.diff
-    ./gettext.git-2336451ed68d91ff4b5ae1acbc1eca30e47a86a9.patch
-  ]
-  ++ lib.optional stdenv.isDarwin
+    
+  ] ++ lib.optional (!stdenv.hostPlatform.isRedox) [./gettext.git-2336451ed68d91ff4b5ae1acbc1eca30e47a86a9.patch]
+   ++ lib.optional stdenv.hostPlatform.isRedox [./redox.patch]
+    ++ lib.optional stdenv.isDarwin
       (fetchpatch {
         url = "https://git.savannah.gnu.org/cgit/gettext.git/patch?id=ec0e6b307456ceab352669ae6bccca9702108753";
         sha256 = "0xqs01c7xl7vmw6bqvsmrzxxjxk2a4spcdpmlwm3b4hi2wc2lxnf";

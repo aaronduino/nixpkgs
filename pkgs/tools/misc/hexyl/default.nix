@@ -5,13 +5,15 @@ rustPlatform.buildRustPackage rec {
   version = "0.8.0";
 
   src = fetchFromGitHub {
-    owner  = "sharkdp";
+    owner  = "shaarkdp";
     repo   = pname;
     rev    = "v${version}";
     sha256 = "0aj2sysl0spf5zlcd5kfzlw97w7dzf9x93pv0d1v9blnbd1rz7lm";
   };
 
   cargoSha256 = "1am9vs7l2wzgwqakrsl27x1y7jpn9xaqa4kr48wwqzka401h6j4m";
+
+  RUSTC_BOOTSTRAP=1;
 
   meta = with stdenv.lib; {
     changelog = "https://github.com/sharkdp/hexyl/releases/tag/v${version}";
@@ -25,6 +27,6 @@ rustPlatform.buildRustPackage rec {
     homepage    = "https://github.com/sharkdp/hexyl";
     license     = with licenses; [ asl20 /* or */ mit ];
     maintainers = with maintainers; [ dywedir ];
-    platforms   = platforms.linux ++ platforms.darwin;
+    platforms   = platforms.linux ++ platforms.darwin ++ platforms.redox;
   };
 }

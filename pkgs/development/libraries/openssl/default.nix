@@ -1,4 +1,4 @@
-{ stdenv, fetchurl, buildPackages, perl, coreutils
+{ lib, stdenv, fetchurl, buildPackages, perl, coreutils
 , withCryptodev ? false, cryptodev
 , enableSSL2 ? false
 , enableSSL3 ? false
@@ -13,7 +13,11 @@ let
     pname = "openssl";
     inherit version;
 
-    src = fetchurl {
+    src = if stdenv.hostPlatform.isRedox then fetchGit {
+      url = "https://gitlab.redox-os.org/redox-os/openssl";
+      ref = "redox";
+      rev = "97449cd8763edcb3cdbd0f2465bdddd5ca9f7818";
+    } else fetchurl {
       url = "https://www.openssl.org/source/${pname}-${version}.tar.gz";
       inherit sha256;
     };
@@ -28,13 +32,18 @@ let
         substituteInPlace "$a" \
           --replace /bin/rm rm
       done
-    '' + optionalString (versionAtLeast version "1.1.1") ''
+    ''
+    + optionalString (versionAtLeast version "1.1.1" && !stdenv.hostPlatform.isRedox) ''
       substituteInPlace config --replace '/usr/bin/env' '${coreutils}/bin/env'
-    '' + optionalString (versionAtLeast version "1.1.0" && stdenv.hostPlatform.isMusl) ''
+    ''
+    + optionalString (versionAtLeast version "1.1.0" && stdenv.hostPlatform.isMusl) ''
       substituteInPlace crypto/async/arch/async_posix.h \
         --replace '!defined(__ANDROID__) && !defined(__OpenBSD__)' \
                   '!defined(__ANDROID__) && !defined(__OpenBSD__) && 0'
     '';
+    # + optionalString stdenv.targetPlatform.isRedox ''
+    #   sed -i 's/glob/bsd_glob/g' Configure
+    # '';
 
     outputs = [ "bin" "dev" "out" "man" ] ++ optional withDocs "doc";
     setOutputFlags = false;
@@ -52,6 +61,7 @@ let
         x86_64-darwin  = "./Configure darwin64-x86_64-cc";
         x86_64-linux = "./Configure linux-x86_64";
         x86_64-solaris = "./Configure solaris64-x86_64-gcc";
+        x86_64-redox = "./Configure redox-x86_64";
       }.${stdenv.hostPlatform.system} or (
         if stdenv.hostPlatform == stdenv.buildPlatform
           then "./config"
@@ -106,7 +116,7 @@ let
     '' +
     ''
       mkdir -p $bin
-    '' + stdenv.lib.optionalString (!stdenv.hostPlatform.isWindows)
+    '' + stdenv.lib.optionalString (!stdenv.hostPlatform.isWindows && !stdenv.hostPlatform.isRedox)
     ''
       substituteInPlace $out/bin/c_rehash --replace ${buildPackages.perl} ${perl}
     '' +
@@ -122,7 +132,7 @@ let
       rmdir $out/etc/ssl/{certs,private}
     '';
 
-    postFixup = stdenv.lib.optionalString (!stdenv.hostPlatform.isWindows) ''
+    postFixup = stdenv.lib.optionalString (!stdenv.hostPlatform.isWindows && !stdenv.hostPlatform.isRedox) ''
       # Check to make sure the main output doesn't depend on perl
       if grep -r '${buildPackages.perl}' $out; then
         echo "Found an erroneous dependency on perl ^^^" >&2
@@ -145,12 +155,10 @@ in {
     version = "1.0.2u";
     sha256 = "ecd0c6ffb493dd06707d38b14bb4d8c2288bb7033735606569d8f90f89669d16";
     patches = [
-      ./1.0.2/nix-ssl-cert-file.patch
-
       (if stdenv.hostPlatform.isDarwin
        then ./1.0.2/use-etc-ssl-certs-darwin.patch
        else ./1.0.2/use-etc-ssl-certs.patch)
-    ];
+    ] ++ lib.optionals (!stdenv.hostPlatform.isRedox) [./1.0.2/nix-ssl-cert-file.patch];
     extraMeta.knownVulnerabilities = [ "Support for OpenSSL 1.0.2 ended with 2019." ];
   };
 
@@ -158,10 +166,10 @@ in {
     version = "1.1.1g";
     sha256 = "0ikdcc038i7jk8h7asq5xcn8b1xc2rrbc88yfm4hqbz3y5s4gc6x";
     patches = [
+    ] ++ lib.optionals (!stdenv.hostPlatform.isRedox) [
       ./1.1/nix-ssl-cert-file.patch
-
       (if stdenv.hostPlatform.isDarwin
-       then ./1.1/use-etc-ssl-certs-darwin.patch
+       then ./1.1/use-e/home/aaronj/.n/tc-ssl-certs-darwin.patch
        else ./1.1/use-etc-ssl-certs.patch)
     ];
     withDocs = true;

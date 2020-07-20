@@ -1,6 +1,7 @@
 { stdenv, fetchurl
 , pcre, windows ? null
 , variant ? null
+, lib
 }:
 
 with stdenv.lib;
@@ -8,7 +9,7 @@ with stdenv.lib;
 assert elem variant [ null "cpp" "pcre16" "pcre32" ];
 
 let
-  version = "8.44";
+  version = if stdenv.hostPlatform.isRedox then "8.42" else "8.44";
   pname = if (variant == null) then "pcre"
     else  if (variant == "cpp") then "pcre-cpp"
     else  variant;
@@ -18,7 +19,7 @@ in stdenv.mkDerivation {
 
   src = fetchurl {
     url = "https://ftp.pcre.org/pub/pcre/pcre-${version}.tar.bz2";
-    sha256 = "0v9nk51wh55pcbnf2jr36yarz8ayajn6d7ywiq2wagivn9c8c40r";
+    sha256 = if stdenv.hostPlatform.isRedox then "00ckpzlgyr16bnqx8fawa3afjgqxw5yxgs2l081vw23qi1y4pl1c" else "0v9nk51wh55pcbnf2jr36yarz8ayajn6d7ywiq2wagivn9c8c40r";
   };
 
   outputs = [ "bin" "dev" "out" "doc" "man" ];
@@ -30,13 +31,14 @@ in stdenv.mkDerivation {
     ++ optional (variant != null) "--enable-${variant}";
 
   # https://bugs.exim.org/show_bug.cgi?id=2173
-  patches = [ ./stacksize-detection.patch ];
+  patches = [ ./stacksize-detection.patch ] ++ lib.optional stdenv.hostPlatform.isRedox ./redox.patch;
+
 
   preCheck = ''
     patchShebangs RunGrepTest
   '';
 
-  doCheck = !(with stdenv.hostPlatform; isCygwin || isFreeBSD) && stdenv.hostPlatform == stdenv.buildPlatform;
+  doCheck = !(with stdenv.hostPlatform; isCygwin || isFreeBSD || isRedox) && stdenv.hostPlatform == stdenv.buildPlatform;
     # XXX: test failure on Cygwin
     # we are running out of stack on both freeBSDs on Hydra
 
@@ -45,6 +47,8 @@ in stdenv.mkDerivation {
   ''
     + optionalString (variant != null) ''
     ln -sf -t "$out/lib/" '${pcre.out}'/lib/libpcre{,posix}.{so.*.*.*,*dylib}
+  '' + optionalString stdenv.hostPlatform.isRedox ''
+
   '';
 
   meta = {

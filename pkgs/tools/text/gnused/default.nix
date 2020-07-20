@@ -2,17 +2,19 @@
 
 stdenv.mkDerivation rec {
   pname = "gnused";
-  version = "4.8";
+  version = if stdenv.hostPlatform.isRedox then "4.4" else "4.8";
 
   src = fetchurl {
     url = "mirror://gnu/sed/sed-${version}.tar.xz";
-    sha256 = "0cznxw73fzv1n3nj2zsq6nf73rvsbxndp444xkpahdqvlzz0r6zp";
+    sha256 = if stdenv.hostPlatform.isRedox then "0fv88bcnraixc8jvpacvxshi30p5x9m7yb8ns1hfv07hmb2ypmnb" else "0cznxw73fzv1n3nj2zsq6nf73rvsbxndp444xkpahdqvlzz0r6zp";
   };
 
   outputs = [ "out" "info" ];
 
   nativeBuildInputs = [ perl ];
   preConfigure = "patchShebangs ./build-aux/help2man";
+
+  patches = if stdenv.hostPlatform.isRedox then [./redox.patch] else [];
 
   # Prevents attempts of running 'help2man' on cross-built binaries.
   PERL = if stdenv.hostPlatform == stdenv.buildPlatform then null else "missing";

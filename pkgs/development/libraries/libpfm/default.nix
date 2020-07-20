@@ -28,7 +28,7 @@ stdenv.mkDerivation (rec {
     '';
     license = licenses.gpl2;
     maintainers = [ maintainers.pierron ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.redox;
   };
 } // stdenv.lib.optionalAttrs ( ! enableShared )
 {

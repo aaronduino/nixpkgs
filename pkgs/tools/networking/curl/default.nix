@@ -31,7 +31,10 @@ stdenv.mkDerivation rec {
   pname = "curl";
   version = "7.71.0";
 
-  src = fetchurl {
+  src = if stdenv.hostPlatform.isRedox then fetchGit {
+    url = "https://gitlab.redox-os.org/redox-os/curl";
+    rev = "1c5963a79ba69bc332865dfbfc2cddc7e545dc80";
+  } else fetchurl {
     urls = [
       "https://curl.haxx.se/download/${pname}-${version}.tar.bz2"
       "https://github.com/curl/curl/releases/download/${lib.replaceStrings ["."] ["_"] pname}-${version}/${pname}-${version}.tar.bz2"
@@ -63,7 +66,9 @@ stdenv.mkDerivation rec {
     optional brotliSupport brotli;
 
   # for the second line see https://curl.haxx.se/mail/tracker-2014-03/0087.html
-  preConfigure = ''
+  preConfigure = if stdenv.hostPlatform.isRedox then ''
+    sed -e 's|/usr/bin|/no-such-path|g' -i.bak configure
+  '' else ''
     sed -e 's|/usr/bin|/no-such-path|g' -i.bak configure
     rm src/tool_hugehelp.c
   '';
@@ -90,9 +95,16 @@ stdenv.mkDerivation rec {
        # For the 'urandom', maybe it should be a cross-system option
     ++ stdenv.lib.optional (stdenv.hostPlatform != stdenv.buildPlatform)
        "--with-random=/dev/urandom"
-    ++ stdenv.lib.optionals stdenv.hostPlatform.isWindows [
+    ++ stdenv.lib.optionals (stdenv.hostPlatform.isWindows || stdenv.hostPlatform.isRedox) [
       "--disable-shared"
       "--enable-static"
+    ]
+    ++ stdenv.lib.optionals stdenv.hostPlatform.isRedox [
+      "--disable-ftp"
+      "--disable-ipv6"
+      "--disable-ntlm-wb"
+      "--disable-tftp"
+      "--disable-threaded-resolver"
     ];
 
   CXX = "${stdenv.cc.targetPrefix}c++";
