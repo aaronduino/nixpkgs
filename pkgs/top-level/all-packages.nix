@@ -388,7 +388,9 @@ in
   fetchRepoProject = callPackage ../build-support/fetchrepoproject { };
 
   fetchipfs = import ../build-support/fetchipfs {
-    inherit curl stdenv;
+    # inherit curl stdenv;
+    curl = buildPackages.curl;
+    stdenv = buildPackages.stdenv;
   };
 
   fetchzip = callPackage ../build-support/fetchzip { };
@@ -8029,7 +8031,7 @@ in
 
   any-nix-shell = callPackage ../shells/any-nix-shell { };
 
-  bash = lowPrio (callPackage ../shells/bash/4.4.nix { });
+  bash = lowPrio (callPackage ../shells/bash/4.4.nix { binutils = binutils-unwrapped; });
   bash_5 = lowPrio (callPackage ../shells/bash/5.0.nix { });
   bashInteractive_5 = lowPrio (callPackage ../shells/bash/5.0.nix {
     interactive = true;
@@ -8349,8 +8351,8 @@ in
   gerbil-support = callPackage ../development/compilers/gerbil/gerbil-support.nix { };
   gerbilPackages-unstable = gerbil-support.gerbilPackages-unstable; # NB: don't recurseIntoAttrs for (unstable!) libraries
 
-  gccFun = callPackage (if stdenv.targetPlatform.isVc4 then ../development/compilers/gcc/6 else ../development/compilers/gcc/9);
-  gcc = if stdenv.targetPlatform.isVc4 then gcc6 else gcc9;
+  gccFun = callPackage (if (stdenv.targetPlatform.isVc4 || stdenv.targetPlatform.libc == "relibc") then ../development/compilers/gcc/6 else ../development/compilers/gcc/9);
+  gcc = (if (stdenv.targetPlatform.libc == "relibc" || stdenv.targetPlatform.isVc4) then gcc6 else gcc9);
   gcc-unwrapped = gcc.cc;
 
   gccStdenv = if stdenv.cc.isGNU then stdenv else stdenv.override {
@@ -8485,7 +8487,8 @@ in
     libcCross = if stdenv.targetPlatform != stdenv.buildPlatform then libcCross else null;
     threadsCross = if stdenv.targetPlatform != stdenv.buildPlatform then threadsCross else null;
 
-    isl = if !stdenv.isDarwin then isl_0_14 else null;
+    isl = if stdenv.isDarwin then null else
+      (if stdenv.targetPlatform.isRedox then isl_0_17 else isl_0_14);
   }));
 
   gcc7 = lowPrio (wrapCC (callPackage ../development/compilers/gcc/7 {
@@ -9061,7 +9064,7 @@ in
   llvm_6  = llvmPackages_6.llvm;
   llvm_5  = llvmPackages_5.llvm;
 
-  llvmPackages = recurseIntoAttrs llvmPackages_7;
+  llvmPackages = recurseIntoAttrs (if stdenv.targetPlatform.isRedox then llvmPackages_6 else llvmPackages_7);
 
   llvmPackages_5 = callPackage ../development/compilers/llvm/5 ({
     inherit (stdenvAdapters) overrideCC;
@@ -12137,6 +12140,7 @@ in
     else if name == "libSystem" then targetPackages.darwin.xcode
     else if name == "nblibc" then targetPackages.netbsdCross.libc
     else if name == "wasilibc" then targetPackages.wasilibc or wasilibc
+    else if name == "relibc" then targetPackages.relibc or relibc
     else if stdenv.targetPlatform.isGhcjs then null
     else throw "Unknown libc ${name}";
 
@@ -12148,6 +12152,10 @@ in
     else null;
 
   wasilibc = callPackage ../development/libraries/wasilibc {
+    stdenv = crossLibcStdenv;
+  };
+
+  relibc = callPackage ../development/libraries/relibc {
     stdenv = crossLibcStdenv;
   };
 
@@ -14245,7 +14253,9 @@ in
     then openssl_1_0_2
     else openssl_1_1;
 
-  inherit (callPackages ../development/libraries/openssl { })
+  inherit (callPackages ../development/libraries/openssl {
+    perl = if stdenv.hostPlatform.isRedox then buildPackages.perl528 else perl;
+  })
     openssl_1_0_2
     openssl_1_1;
 
@@ -15665,14 +15675,15 @@ in
   ### DEVELOPMENT / PERL MODULES
 
   perlInterpreters = callPackages ../development/interpreters/perl {};
-  inherit (perlInterpreters) perl528 perl530 perldevel;
+  inherit (perlInterpreters) perl524 perl528 perl530 perldevel;
 
+  perl524Packages = recurseIntoAttrs perl524.pkgs;
   perl528Packages = recurseIntoAttrs perl528.pkgs;
   perl530Packages = recurseIntoAttrs perl530.pkgs;
   perldevelPackages = perldevel.pkgs;
 
-  perl = perl530;
-  perlPackages = perl530Packages;
+  perl = perl530;#if stdenv.hostPlatform.isRedox then perl524 else perl530;
+  perlPackages = perl530Packages;#if stdenv.hostPlatform.isRedox then perl524Packages else perl530Packages;
 
   ack = perlPackages.ack;
 

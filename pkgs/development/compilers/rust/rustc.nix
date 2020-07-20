@@ -1,5 +1,6 @@
 { stdenv, removeReferencesTo, pkgsBuildBuild, pkgsBuildHost, pkgsBuildTarget
-, fetchurl, file, python3
+, lib
+, fetchurl, fetchgit, file, python3
 , llvm_9, darwin, cmake, rust, rustPlatform
 , pkgconfig, openssl
 , which, libffi
@@ -90,7 +91,7 @@ in stdenv.mkDerivation rec {
     "${setBuild}.llvm-config=${llvmSharedForBuild}/bin/llvm-config"
     "${setHost}.llvm-config=${llvmSharedForHost}/bin/llvm-config"
     "${setTarget}.llvm-config=${llvmSharedForTarget}/bin/llvm-config"
-  ] ++ optionals stdenv.isLinux [
+  ] ++ optionals (stdenv.isLinux && !stdenv.targetPlatform.isRedox) [
     "--enable-profiler" # build libprofiler_builtins
   ];
 
@@ -135,6 +136,8 @@ in stdenv.mkDerivation rec {
 
   outputs = [ "out" "man" "doc" ];
   setOutputFlags = false;
+
+  doCheck = !stdenv.targetPlatform.isRedox;
 
   postInstall = stdenv.lib.optionalString enableRustcDev ''
     # install rustc-dev components. Necessary to build rls, clippy...

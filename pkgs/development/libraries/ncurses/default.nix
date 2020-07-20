@@ -14,7 +14,7 @@
 
 stdenv.mkDerivation rec {
   # Note the revision needs to be adjusted.
-  version = "6.2";
+  version = if stdenv.hostPlatform.isRedox then "6.1" else "6.2";
   name = "ncurses-${version}" + lib.optionalString (abiVersion == "5") "-abi5-compat";
 
   # We cannot use fetchFromGitHub (which calls fetchzip)
@@ -24,10 +24,11 @@ stdenv.mkDerivation rec {
     rev = "v${version}";
   in fetchurl {
     url = "https://github.com/mirror/ncurses/archive/${rev}.tar.gz";
-    sha256 = "15r2456g0mlq2q7gh2z52vl6zv6y0z8sdchrs80kg4idqd8sm8fd";
+    sha256 = if stdenv.hostPlatform.isRedox then "0fzsj6rjp08y27ms58nnwhsmlza3mdsk01fk93y62b0fj99wr3mz" else "15r2456g0mlq2q7gh2z52vl6zv6y0z8sdchrs80kg4idqd8sm8fd";
   };
 
-  patches = lib.optional (!stdenv.cc.isClang) ./clang.patch;
+  patches = lib.optional (!stdenv.cc.isClang && !stdenv.hostPlatform.isRedox) ./clang.patch
+  ++ lib.optional stdenv.hostPlatform.isRedox ./redox.patch;
 
   outputs = [ "out" "dev" "man" ];
   setOutputFlags = false; # some aren't supported
@@ -45,6 +46,12 @@ stdenv.mkDerivation rec {
     ++ lib.optionals stdenv.hostPlatform.isWindows [
       "--enable-sp-funcs"
       "--enable-term-driver"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isRedox [
+      "--disable-db-install"
+      "--without-ada"
+      "--without-tests"
+      "cf_cv_func_mkstemp=yes"
     ];
 
   # Only the C compiler, and explicitly not C++ compiler needs this flag on solaris:
@@ -74,6 +81,21 @@ stdenv.mkDerivation rec {
            -e '/CPPFLAGS="$CPPFLAGS/s/ -D_XOPEN_SOURCE_EXTENDED//' \
         configure
     CFLAGS=-D_XOPEN_SOURCE_EXTENDED
+  '';
+
+  postConfigure = lib.optionalString stdenv.hostPlatform.isRedox ''
+    pwd
+    ls
+    sed -i 's/if USE_NEW_PAIR/if 0/g' */*.{c,h}
+    sed -i 's/if USE_NEW_PAIR/if 0/g' */*/*.{c,h}
+    sed -i 's/if HAVE_TSEARCH/if 0/g' */*.{c,h}
+    grep -R -C 7 search.h .
+    echo '##################################'
+    echo '##################################'
+    echo '##################################'
+    echo '##################################'
+    echo '##################################'
+    echo '##################################'
   '';
 
   enableParallelBuilding = true;

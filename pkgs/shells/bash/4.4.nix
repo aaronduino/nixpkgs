@@ -41,19 +41,20 @@ stdenv.mkDerivation rec {
     -DSSH_SOURCE_BASHRC
   '';
 
-  patchFlags = [ "-p0" "-T" ];
+  patchFlags = if stdenv.hostPlatform.isRedox then [] else [ "-p0" "-T" ];
 
-  patches = upstreamPatches
+  patches = if stdenv.hostPlatform.isRedox then [./redox.patch] else (upstreamPatches
     ++ [ ./pgrp-pipe-4.4.patch ]
     ++ optional stdenv.hostPlatform.isCygwin ./cygwin-bash-4.4.11-2.src.patch
     # https://lists.gnu.org/archive/html/bug-bash/2016-10/msg00006.html
     ++ optional stdenv.hostPlatform.isMusl (fetchurl {
       url = "https://lists.gnu.org/archive/html/bug-bash/2016-10/patchJxugOXrY2y.patch";
       sha256 = "1m4v9imidb1cc1h91f2na0b8y9kc5c5fgmpvy9apcyv2kbdcghg1";
-    });
+    }));
+    # ++ optional stdenv.hostPlatform.isRedox ./redox.patch;
 
   configureFlags = [
-    (if interactive then "--with-installed-readline" else "--disable-readline")
+    (if false then "--with-installed-readline" else "--disable-readline")
   ] ++ optionals (stdenv.hostPlatform != stdenv.buildPlatform) [
     "bash_cv_job_control_missing=nomissing"
     "bash_cv_sys_named_pipes=nomissing"
@@ -65,7 +66,8 @@ stdenv.mkDerivation rec {
     "bash_cv_dev_stdin=present"
     "bash_cv_dev_fd=standard"
     "bash_cv_termcap_lib=libncurses"
-  ] ++ optionals (stdenv.hostPlatform.libc == "musl") [
+  ] ++ optional stdenv.hostPlatform.isRedox "bash_cv_getenv_redef=no"
+    ++ optionals (stdenv.hostPlatform.libc == "musl") [
     "--without-bash-malloc"
     "--disable-nls"
   ];
@@ -74,8 +76,8 @@ stdenv.mkDerivation rec {
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [ bison ]
     ++ optional withDocs texinfo
-    ++ optional stdenv.hostPlatform.isDarwin binutils
-    ++ optional (stdenv.hostPlatform.libc == "musl") autoconf;
+    ++ optional (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isRedox) binutils
+    ++ optional (stdenv.hostPlatform.libc == "musl" || stdenv.hostPlatform.isRedox) autoconf;
 
   buildInputs = optional interactive readline70;
 

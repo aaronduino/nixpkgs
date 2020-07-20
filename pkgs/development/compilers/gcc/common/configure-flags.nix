@@ -86,7 +86,7 @@ let
       "--enable-threads=${if targetPlatform.isUnix then "posix"
                           else if targetPlatform.isWindows then "mcf"
                           else "single"}"
-      "--enable-nls"
+      (if hostPlatform.isRedox then "--disable-nls" else "--enable-nls")
       "--disable-decimal-float" # No final libdecnumber (it may work only in 386)
     ] ++ lib.optionals (targetPlatform.libc == "uclibc" || targetPlatform.libc == "musl") [
       # libsanitizer requires netrom/netrom.h which is not

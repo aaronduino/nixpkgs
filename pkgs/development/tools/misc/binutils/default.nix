@@ -22,6 +22,10 @@ let
   # PATH to both be usable.
   targetPrefix = lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform)
                   "${stdenv.targetPlatform.config}-";
+  redox-binutils-src = fetchGit {
+    url = "https://gitlab.redox-os.org/redox-os/binutils-gdb";
+    rev = "692afe7cc2d41134d08e5c487ddad125d5aaec5e";
+  };
   vc4-binutils-src = fetchFromGitHub {
     owner = "itszor";
     repo = "binutils-vc4";
@@ -39,17 +43,15 @@ stdenv.mkDerivation {
   pname = targetPrefix + basename;
   inherit version;
 
-  src = if stdenv.targetPlatform.isVc4 then vc4-binutils-src else normal-src;
+  src = if stdenv.targetPlatform.isVc4
+      then vc4-binutils-src
+    else if stdenv.hostPlatform.isRedox
+      then redox-binutils-src
+      else normal-src;
 
   patches = [
     # Make binutils output deterministic by default.
     ./deterministic.patch
-
-    # Bfd looks in BINDIR/../lib for some plugins that don't
-    # exist. This is pointless (since users can't install plugins
-    # there) and causes a cycle between the lib and bin outputs, so
-    # get rid of it.
-    ./no-plugins.patch
 
     # Help bfd choose between elf32-littlearm, elf32-littlearm-symbian, and
     # elf32-littlearm-vxworks in favor of the first.
@@ -64,7 +66,14 @@ stdenv.mkDerivation {
     # cross-compiling.
     ./always-search-rpath.patch
 
-  ] ++ lib.optionals (!stdenv.targetPlatform.isVc4)
+  ] ++ lib.optionals (!stdenv.hostPlatform.isRedox)
+  [
+    # Bfd looks in BINDIR/../lib for some plugins that don't
+    # exist. This is pointless (since users can't install plugins
+    # there) and causes a cycle between the lib and bin outputs, so
+    # get rid of it.
+    ./no-plugins.patch
+  ] ++ lib.optionals (!stdenv.targetPlatform.isVc4 && !stdenv.hostPlatform.isRedox)
   [
     # https://sourceware.org/bugzilla/show_bug.cgi?id=22868
     ./gold-symbol-visibility.patch
@@ -83,7 +92,7 @@ stdenv.mkDerivation {
     bison
   ] ++ (lib.optionals stdenv.targetPlatform.isiOS [
     autoreconfHook
-  ]) ++ lib.optionals stdenv.targetPlatform.isVc4 [ texinfo flex ];
+  ]) ++ lib.optionals (stdenv.targetPlatform.isVc4 || stdenv.targetPlatform.isRedox) [ texinfo flex ];
   buildInputs = [ zlib gettext ];
 
   inherit noSysDirs;
@@ -128,7 +137,8 @@ stdenv.mkDerivation {
     # RUNPATH instead of RPATH on binaries.  This is important because
     # RUNPATH can be overriden using LD_LIBRARY_PATH at runtime.
     "--enable-new-dtags"
-  ] ++ lib.optionals gold [ "--enable-gold" "--enable-plugins" ];
+  ] ++ lib.optionals gold [ "--enable-gold" "--enable-plugins" ]
+  ++ lib.optionals stdenv.targetPlatform.isRedox ["--disable-gdb" "--disable-nls"];
 
   doCheck = false; # fails
 

@@ -1,5 +1,5 @@
-{ stdenv, fetchurl, m4
-, cxx ? !stdenv.hostPlatform.useAndroidPrebuilt && !stdenv.hostPlatform.isWasm
+{ stdenv, fetchurl, m4, lib
+, cxx ? !stdenv.hostPlatform.useAndroidPrebuilt && !stdenv.hostPlatform.isWasm && !stdenv.hostPlatform.isRedox
 , buildPackages
 , withStatic ? false }:
 
