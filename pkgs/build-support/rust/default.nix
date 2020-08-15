@@ -4,6 +4,9 @@
 , cargo
 , diffutils
 , fetchCargoTarball
+, runCommandNoCC
+, rustPlatform
+, remarshal
 , git
 , rust
 , rustc
@@ -26,9 +29,12 @@
 , cargoBuildFlags ? []
 , buildType ? "release"
 , meta ? {}
-, target ? null
+, target ? rust.toRustTarget stdenv.hostPlatform
 , cargoVendorDir ? null
 , checkType ? buildType
+
+# Only matters if `target` is a JSON file. Toggles whether a custom sysroot is created.
+, dontAddSysroot ? false
 
 # Needed to `pushd`/`popd` into a subdir of a tarball if this subdir
 # contains a Cargo.toml, but isn't part of a workspace (which is e.g. the
@@ -66,14 +72,133 @@ let
     else ''
       cargoDepsCopy="$sourceRoot/${cargoVendorDir}"
     '';
+  
+  targetIsJSON = stdenv.lib.hasSuffix ".json" target;
 
-  rustTarget = if target == null then rust.toRustTarget stdenv.hostPlatform else target;
+  rustSrc = stdenv.mkDerivation {
+    name = "rust-src";
+    src = rustPlatform.rust.rustc.src;
+    preferLocalBuild = true;
+    phases = [ "unpackPhase" "installPhase" ];
+    installPhase = "cp -r src $out";
+  };
+
+  toTOML = value: builtins.readFile (runCommandNoCC "tmp.toml" {
+    nativeBuildInputs = [ remarshal ];
+    value = builtins.toJSON value;
+    passAsFile = [ "value" ];
+  } ''
+    json2toml "$valuePath" "$out"
+  '');
+
+  # sysroot logic based on https://github.com/DianaNites/cargo-sysroot/
+
+  sysrootSrc = let
+    parentToml = builtins.readFile (src + /Cargo.toml);
+    parentTomlParsed = builtins.fromTOML parentToml;
+    parentProfile = if builtins.hasAttr "profile" parentTomlParsed
+                    then parentTomlParsed.profile else {};
+    sysrootProfileToml = toTOML parentProfile;
+  in stdenv.mkDerivation {
+    name = "sysroot-src";
+    # inherit src;
+    phases = [ "installPhase" ];
+    installPhase = ''
+      mkdir -p $out
+      cat << EOF > $out/Cargo.toml
+      [package]
+      name = "alloc"
+      version = "0.0.0"
+      authors = ["The Rust Project Developers"]
+      edition = "2018"
+      [dependencies.compiler_builtins]
+      version = "0.1.0"
+      features = ["rustc-dep-of-std", "mem"]
+
+      [dependencies.core]
+      path = "${rustSrc}/libcore"
+      # [profile.dev]
+      # opt-level = 3
+      # lto = true
+
+      # [profile.release]
+      # lto = true
+
+      [lib]
+      name = "alloc"
+      path = "${rustSrc}/liballoc/lib.rs"
+      [patch.crates-io.rustc-std-workspace-core]
+      path = "${rustSrc}/tools/rustc-std-workspace-core"
+
+      ${sysrootProfileToml}
+      EOF
+
+      cat << EOF > $out/Cargo.lock
+      [[package]]
+      name = "alloc"
+      version = "0.0.0"
+      dependencies = [
+      "compiler_builtins",
+      "core",
+      ]
+
+      [[package]]
+      name = "compiler_builtins"
+      version = "0.1.32"
+      source = "registry+https://github.com/rust-lang/crates.io-index"
+      checksum = "7bc4ac2c824d2bfc612cba57708198547e9a26943af0632aff033e0693074d5c"
+      dependencies = [
+      "rustc-std-workspace-core",
+      ]
+
+      [[package]]
+      name = "core"
+      version = "0.0.0"
+
+      [[package]]
+      name = "rustc-std-workspace-core"
+      version = "1.99.0"
+      dependencies = [
+      "core",
+      ]
+      EOF
+    '';
+  };
+
+  sysroot = let
+    RUSTFLAGS = if builtins.hasAttr "RUSTFLAGS" args then args.RUSTFLAGS else "";
+  in rustPlatform.buildRustPackage {
+    name = "custom-sysroot";
+    src = sysrootSrc;
+    RUSTC_BOOTSTRAP = 1;
+    inherit target RUSTFLAGS;
+    dontAddSysroot = true;
+    cargoSha256 = "0c545wkfiri3wxhdi1fiq11h7b1li07likplirg3a067d63mwz01";
+
+    installPhase = ''
+      export LIBS_DIR=$out/lib/rustlib/${shortTarget}/lib
+      mkdir -p $LIBS_DIR
+      for f in target/${shortTarget}/release/deps/*.{rlib,rmeta}; do
+        cp $f $LIBS_DIR
+      done
+
+      export RUST_SYSROOT=$(rustc --print=sysroot)
+      export HOST=${rust.toRustTarget stdenv.buildPlatform}
+      cp -r $RUST_SYSROOT/lib/rustlib/$HOST $out
+    '';
+  };
+
+  # see https://github.com/rust-lang/cargo/blob/964a16a28e234a3d397b2a7031d4ab4a428b1391/src/cargo/core/compiler/compile_kind.rs#L151-L168
+  # the "${}" is needed to transform the path into a /nix/store path before baseNameOf
+  shortTarget = if targetIsJSON then
+      (stdenv.lib.removeSuffix ".json" (builtins.baseNameOf "${target}"))
+    else target;
 
   ccForBuild="${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}cc";
   cxxForBuild="${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}c++";
   ccForHost="${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
   cxxForHost="${stdenv.cc}/bin/${stdenv.cc.targetPrefix}c++";
-  releaseDir = "target/${rustTarget}/${buildType}";
+  releaseDir = "target/${shortTarget}/${buildType}";
   tmpDir = "${releaseDir}-tmp";
 
   # Specify the stdenv's `diff` by abspath to ensure that the user's build
@@ -113,7 +238,7 @@ stdenv.mkDerivation (args // {
     [target."${rust.toRustTarget stdenv.buildPlatform}"]
     "linker" = "${ccForBuild}"
     ${stdenv.lib.optionalString (stdenv.buildPlatform.config != stdenv.hostPlatform.config) ''
-    [target."${rustTarget}"]
+    [target."${shortTarget}"]
     "linker" = "${ccForHost}"
     ${# https://github.com/rust-lang/rust/issues/46651#issuecomment-433611633
       stdenv.lib.optionalString (stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isAarch64) ''
@@ -181,9 +306,11 @@ stdenv.mkDerivation (args // {
       "CXX_${rust.toRustTarget stdenv.buildPlatform}"="${cxxForBuild}" \
       "CC_${rust.toRustTarget stdenv.hostPlatform}"="${ccForHost}" \
       "CXX_${rust.toRustTarget stdenv.hostPlatform}"="${cxxForHost}" \
-      cargo build \
+      ${stdenv.lib.optionalString
+          (targetIsJSON && !dontAddSysroot) "RUSTFLAGS=\"--sysroot ${sysroot} $RUSTFLAGS\" "
+      }cargo build \
         ${stdenv.lib.optionalString (buildType == "release") "--release"} \
-        --target ${rustTarget} \
+        --target ${target} \
         --frozen ${concatStringsSep " " cargoBuildFlags}
     )
 
@@ -203,7 +330,7 @@ stdenv.mkDerivation (args // {
   '';
 
   checkPhase = args.checkPhase or (let
-    argstr = "${stdenv.lib.optionalString (checkType == "release") "--release"} --target ${rustTarget} --frozen";
+    argstr = "${stdenv.lib.optionalString (checkType == "release") "--release"} --target ${target} --frozen";
   in ''
     ${stdenv.lib.optionalString (buildAndTestSubdir != null) "pushd ${buildAndTestSubdir}"}
     runHook preCheck
