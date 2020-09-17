@@ -23,10 +23,5 @@ in
       XCURSOR_SIZE = "64";
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
     };
-
-    vars.internal = {
-      sublime-text.settings.ui_scale = 2;
-      sublime-merge.settings.ui_scale = 2;
-    };
   };
 }

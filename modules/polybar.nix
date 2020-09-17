@@ -13,12 +13,10 @@ in
 
   config = mkIf (cfg.gui == "i3") {
     home-manager.users."${cfg.username}".services.polybar = {
-      enable = false;
+      enable = true;
       script = "";
       package = pkgs.polybar.override {
         i3GapsSupport = true;
-        # alsaSupport = true;
-        # iwSupport = true;
       };
       config = let
         fonts = {
@@ -45,8 +43,8 @@ in
             width = "100%";
             height = if cfg.hidpi then 55 else 22;
             modules-left = "i3 music";
-            modules-center = "cpu temp wifi memory";
-            modules-right = "todo date";
+            modules-center = "cpu temp filesystem memory";
+            modules-right = "date";
             overline-size = if onBottom then 0 else 4;
             underline-size = if onBottom then 4 else 0;
             module-margin = 1;
@@ -59,7 +57,7 @@ in
             foreground = cfg.colors.foreground;
             border-color = "#00ffffff";
 
-            padding-left = 1;
+            padding-left = 0;
             padding-right = 0;
           };
 
@@ -82,7 +80,7 @@ in
 
           "module/nop" = {
             type = "custom/text";
-            content = " ";
+            content = "";
           };
 
           "module/music" = {
@@ -102,6 +100,14 @@ in
             label-font = 3;
           };
 
+          "module/filesystem" = {
+            type = "custom/script";
+            exec = writeScript ''
+              df -h / | tail -1 | awk '{print $4}'
+            '';
+            interval = 60;
+          };
+
           "module/memory" = {
             type = "custom/script";
             exec = writeScript ''
@@ -112,23 +118,8 @@ in
               usedMB=$(echo "$usedKB / 1024" | bc)
               usedGB=$(echo "scale=2; $usedKB / 1048576" | bc)
 
-              # echo -n "%{u"
-              # if   (( $(echo "$usedGB < 3.0" | bc -l) )); then
-              #   echo -n "#209CF5"; # blue
-              # elif (( $(echo "$usedGB < 4.0" | bc -l) )); then
-              #   echo -n "#12F68E"; # green
-              # elif (( $(echo "$usedGB < 5.0" | bc -l) )); then
-              #   echo -n "#FFC313"; # yellow
-              # elif (( $(echo "$usedGB < 7.0" | bc -l) )); then
-              #   echo -n "#CF6D26"; # orange
-              # else
-              #   echo -n "#F52032"; # red
-              # fi
-              # echo -n " +u}"
-
               echo -n "$usedGB"
               echo -n " GB "
-              # echo "%{u-}"
             '';
             interval = 10;
           };
@@ -162,19 +153,14 @@ in
             label = "%output%";
           };
 
-          # "module/wifi" = {
-          #   type = "custom/text";
-          #   content = "DunderMifflinAP";
-          # };
-
           "module/todo" = {
             type = "custom/text";
-            content = "(study physics)";
+            content = "";
           };
 
           "module/date" = {
             type = "custom/script";
-            exec = "date +'%Y-%m-%d  %H:%M  '";
+            exec = "date +'%Y-%m-%d  %H:%M '";
             interval = 60;
             label-foreground = cfg.colors.foreground;
             label-font = 2;
@@ -182,7 +168,7 @@ in
 
           "module/i3" = if (cfg.hardware == "xps") then {
             type = "custom/script";
-            exec = "nix-shell -p python36 python36Packages.i3ipc --run \"python3 -u ${../bin/i3.py}\"";
+            exec = "${pkgs.python36.withPackages (ps: with ps; [ psutil i3ipc ])}/bin/python3 -u ${../bin/i3.py}";
             tail = true;
             label-foreground = cfg.colors.foreground;
           } else { type = "internal/i3"; };

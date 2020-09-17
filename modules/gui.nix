@@ -210,11 +210,10 @@ in
     # for more packages, see default.nix
     environment.systemPackages = with pkgs; [
       firefox
-      # ajanse-vscode
-      # vscode
-(vscode-with-extensions.override {
+      (vscode-with-extensions.override {
         vscodeExtensions = with vscode-extensions; [
           ms-vscode.cpptools
+          james-yu.latex-workshop
         ] ++ vscode-utils.extensionsFromVscodeMarketplace [
           {
             name = "theme-dracula";
@@ -234,12 +233,16 @@ in
             version = "0.7.8";
             sha256 = "039ns854v1k4jb9xqknrjkj8lf62nfcpfn0716ancmjc4f0xlzb3";
           }
+          {
+            name = "better-toml";
+            publisher = "bungcip";
+            version = "0.3.2";
+            sha256 = "08lhzhrn6p0xwi0hcyp6lj9bvpfj87vr99klzsiy8ji7621dzql3";
+          }
         ];
       })
       (import ../pkgs/sublime-merge).sublimeMerge
-      # freeoffice
-      (pkgs.callPackage (import ../pkgs/discord/default.nix) {})
-      # discord
+      (pkgs.callPackage (import ../pkgs/discord/default.nix) { })
       spotify
       evince
       okular
@@ -251,21 +254,14 @@ in
       libnotify
       xclip
       playerctl
-      keynav
 
       scrot
       feh
-      pinta
-      gimp
       imagemagick
       gnome3.nautilus
-
-      yubioath-desktop
       xsecurelock
 
       signal-desktop
-
-      cava
     ];
 
     nixpkgs.overlays = [
