@@ -21,7 +21,7 @@ let
         XF86MonBrightnessUp = "exec light -A 5";
         XF86MonBrightnessDown = "exec light -U 5";
 
-        "${mod}+space" = "workspace back_and_forth";
+        "${mod}+Tab" = "workspace back_and_forth";
 
         "${mod}+minus" = "workspace prev";
         "${mod}+equal" = "workspace next";

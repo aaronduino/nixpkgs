@@ -11,7 +11,7 @@ buildGoModule rec {
     sha256 = "1v29qscbrzx810pbgwspxfwcrl7kl3k9r04rb3l6kbs1s3rn3hmi";
   };
 
-  modSha256 = "1q6vvy2xz2wm2wzpjk04hbfmsjm72wfa3kxfnnc8b4gxhdhw50ql";
+  vendorSha256 = "1q6vvy2xz2wm2wzpjk04hbfmsjm72wfa3kxfnnc8b4gxhdhw50q0";
 
   postInstall = ''
     cp -r jsHelper $out/bin

@@ -23,16 +23,21 @@ in
     in
       paths;
 
-  nix.trustedUsers = [ "@wheel" ];
-  nix.distributedBuilds = true;
+networking.firewall.enable = false;
+
+
 
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+  # what does this do??
+  # nix.trustedUsers = [ "@wheel" ];
+  #nix.extraOptions = ''
+  #  extra-platforms = aarch64-linux arm-linux
+  #'';
 
   services.journald.extraConfig = ''MaxRetentionSec=1week'';
 
-
   boot.cleanTmpDir = true;
-  boot.tmpOnTmpfs = true;
+  boot.tmpOnTmpfs = false;
 
   networking = {
     hostName = cfg.hostname;
@@ -41,10 +46,7 @@ in
 
   services.dnsmasq = {
     enable = true;
-    servers = [ "8.8.8.8" "8.8.4.4" ];
-    extraConfig = ''
-      address=/idk/127.0.0.1
-    '';
+    servers = [ "178.32.31.41" ];
   };
 
   time.timeZone = "America/Los_Angeles";
@@ -60,17 +62,26 @@ in
     ''}/bin/modified-xsecurelock";
   };
 
+  services.cjdns = {
+    enable = false;
+    UDPInterface = {
+      bind = "0.0.0.0:43211";
+      connectTo = {
+        rpi = {
+          hostname = "cjrpi";
+          publicKey = "qkj9xdd1286p1umrldhzz0861zcq3lbyycvt90x3djvrh0rhyyh0.k";
+          password = "6uoXsaH9ouJ9DxWV6CjzpvDraDvz4Ywq";
+        };
+      };
+    };
+  };
+
   services.gnome3.gnome-keyring.enable = true;
 
-  # services.usbguard = enableWithSecrets {
-  #   presentDevicePolicy = "allow";
-  #   rules = builtins.concatStringsSep "\n" secrets.usbguardRules;
-  # };
-
-  virtualisation.virtualbox.host = {
-    enable = true;
-    #   # enableExtensionPack = true; # takes a long time to build
-  };
+   virtualisation.virtualbox.host = {
+     enable = true;
+  #   enableExtensionPack = true; # takes a long time to build
+   };
 
   security.sudo = {
     enable = true;
@@ -103,13 +114,25 @@ in
       "video"
       "audio"
       "vboxusers"
+      "libvirtd" "kvm" "adbusers" "docker"
     ];
     createHome = true;
     home = "/home/${cfg.username}";
   };
 
+  environment.variables = {
+    GOPATH = "/home/${cfg.username}/.go";
+    NNTPSERVER = "localhost:1119";
+  };
+
+#programs.adb.enable = true;
+services.tor.torsocks.enable = true;
+virtualisation.libvirtd.enable = true;
+
   # for more packages, see gui.nix
   environment.systemPackages = with pkgs; [
+    coreutils
+  
     acpi
     gnupg
     pinentry-curses
@@ -121,17 +144,12 @@ in
 
     git-crypt
 
-    # (import ../pkgs/mcfly.nix)
 
-    # (pkgs.callPackage ../pkgs/amp.nix {})
-
-    nixops
+    # nixops
 
     docker-compose
 
     # vulnix # scan system vulnerabilities
-
-    #(import ../pkgs/ncspot.nix)
 
     dropbox
 

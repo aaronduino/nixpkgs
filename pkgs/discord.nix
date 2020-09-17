@@ -3,7 +3,7 @@ with import <nixpkgs> {};
 stdenv.mkDerivation rec {
 
   pname = "discord";
-  version = "0.0.9";
+  version = "0.1.0";
 
   src = fetchurl {
     url = "https://cdn.discordapp.com/apps/linux/${version}/${pname}-${version}.tar.gz";

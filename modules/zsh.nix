@@ -100,12 +100,38 @@ in
       autocd = true;
       history.save = 10000000;
       history.size = 10000000;
+      plugins = [
+      {
+        name = "zsh-nix-shell";
+        src = pkgs.fetchFromGitHub {
+          owner = "chisui";
+          repo = "zsh-nix-shell";
+          rev = "v0.1.0";
+          sha256 = "0snhch9hfy83d4amkyxx33izvkhbwmindy0zjjk28hih1a9l2jmx";
+        };
+      }
+    ];
       initExtra = ''
         autoload -U colors && colors
 
         precmd () { PS1=$(zsh ${../bin/prompt.sh}) }
 
-      '';
+      '' + (let
+           envPath = "${cfg.secrets}/restic-env.conf";
+           passPath = "${cfg.secrets}/restic-password.txt";
+         in
+           if (
+             (builtins.pathExists envPath)
+             && (builtins.pathExists passPath)
+          ) then ''
+             r-b2 () {
+              ( cd /home/${cfg.username} && source ${envPath} && restic -r b2:ajanse-archive:/ -p ${passPath} $* )
+             }
+
+             r-nas () {
+             ( cd /home/${cfg.username} && source ${envPath} && restic -p ${passPath} -r sftp:aaron@192.168.1.160:/homes/aaron $* )
+             }
+     '' else "");
     };
     in
       {

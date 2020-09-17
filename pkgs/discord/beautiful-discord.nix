@@ -6,8 +6,8 @@ python36Packages.buildPythonApplication rec {
   src = fetchFromGitHub {
     owner = "leovoel";
     repo = "BeautifulDiscord";
-    rev = "3b77e91b4c62e431e579fa594746753b3cd7fd69";
-    sha256 = "0l2lg4ana942dgymjj4knglqsj1q1ixvmc9q30y73wcgjg97iq10";
+    rev = "17c20c4bd885758cbfef49daf0f27ce1be2ff1ff";
+    sha256 = "1kykjsad2n7llv6k2bvqrnmiparld488drldxw6s6s9da5ribk45";
   };
   patches = [
     (

@@ -1,119 +1,49 @@
-{ pname
-, version
-, src
-, binaryName
-, desktopName
-, stdenv
-, fetchurl
-, makeDesktopItem
-, wrapGAppsHook
-, alsaLib
-, atk
-, at-spi2-atk
-, at-spi2-core
-, cairo
-, cups
-, dbus
-, expat
-, fontconfig
-, freetype
-, gdk-pixbuf
-, glib
-, gtk3
-, libnotify
-, libX11
-, libXcomposite
-, libXcursor
-, libXdamage
-, libuuid
-, libXext
-, libXfixes
-, libXi
-, libXrandr
-, libXrender
-, libXtst
-, nspr
-, nss
-, libxcb
-, pango
-, systemd
-, libXScrnSaver
-, libcxx
-, libpulseaudio
-, gdk_pixbuf
+{ pname, version, src, binaryName, desktopName
+, stdenv, fetchurl, makeDesktopItem, wrapGAppsHook
+, alsaLib, atk, at-spi2-atk, at-spi2-core, cairo, cups, dbus, expat, fontconfig, freetype
+, gdk-pixbuf, glib, gtk3, libnotify, libX11, libXcomposite, libXcursor, libXdamage, libuuid
+, libXext, libXfixes, libXi, libXrandr, libXrender, libXtst, nspr, nss, libxcb
+, pango, systemd, libXScrnSaver, libcxx, libpulseaudio
 , xvfb_run
-, callPackage
-, pkgs
-}:
+, callPackage, ... }:
+
 let
+  inherit binaryName;
   beautiful-discord = callPackage (import ./beautiful-discord.nix) {};
-in
-stdenv.mkDerivation rec {
-
-  pname = "discord";
-  version = "0.0.9";
-
-  src = fetchurl {
-    url = "https://cdn.discordapp.com/apps/linux/${version}/${pname}-${version}.tar.gz";
-    sha256 = "1i0f8id10rh2fx381hx151qckvvh8hbznfsfav8w0dfbd1bransf";
-  };
+in stdenv.mkDerivation rec {
+  inherit pname version src;
 
   nativeBuildInputs = [ wrapGAppsHook ];
 
   dontWrapGApps = true;
 
   libPath = stdenv.lib.makeLibraryPath [
-    libcxx
-    systemd
-    libpulseaudio
-    stdenv.cc.cc
-    alsaLib
-    atk
-    at-spi2-atk
-    cairo
-    cups
-    dbus
-    expat
-    fontconfig
-    freetype
-    gdk_pixbuf
-    glib
-    gtk3
-    libnotify
-    libX11
-    libXcomposite
-    libuuid
-    libXcursor
-    libXdamage
-    libXext
-    libXfixes
-    libXi
-    libXrandr
-    libXrender
-    libXtst
-    nspr
-    nss
-    libxcb
-    pango
-    systemd
-    libXScrnSaver
-  ];
+    libcxx systemd libpulseaudio
+    stdenv.cc.cc alsaLib atk at-spi2-atk at-spi2-core cairo cups dbus expat fontconfig freetype
+    gdk-pixbuf glib gtk3 libnotify libX11 libXcomposite libuuid
+    libXcursor libXdamage libXext libXfixes libXi libXrandr libXrender
+    libXtst nspr nss libxcb pango systemd libXScrnSaver
+   ];
 
   installPhase = ''
-        mkdir -p $out/{bin,opt/discord,share/pixmaps}
-        mv * $out/opt/discord
-        chmod +x $out/opt/discord/Discord
-        patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
-                 $out/opt/discord/Discord
-        wrapProgram $out/opt/discord/Discord \
-          "''${gappsWrapperArgs[@]}" \
-          --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
-          --prefix LD_LIBRARY_PATH : ${libPath}
-        ln -s $out/opt/discord/Discord $out/bin/
-        ln -s $out/opt/discord/discord.png $out/share/pixmaps
-        ln -s "${desktopItem}/share/applications" $out/share/
+    mkdir -p $out/{bin,opt/${binaryName},share/pixmaps}
+    mv * $out/opt/${binaryName}
 
-    mv $out/bin/Discord $out/bin/.Discord
+    chmod +x $out/opt/${binaryName}/${binaryName}
+    patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
+        $out/opt/${binaryName}/${binaryName}
+
+    wrapProgram $out/opt/${binaryName}/${binaryName} \
+        "''${gappsWrapperArgs[@]}" \
+        --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
+        --prefix LD_LIBRARY_PATH : ${libPath}
+
+    ln -s $out/opt/${binaryName}/${binaryName} $out/bin/
+    ln -s $out/opt/${binaryName}/discord.png $out/share/pixmaps/${pname}.png
+
+    ln -s "${desktopItem}/share/applications" $out/share/
+
+      mv $out/bin/Discord $out/bin/.Discord
 
     cat > $out/bin/discord <<EOF
     if [ ! -d \$HOME/.config/discord ]; then
@@ -138,17 +68,20 @@ stdenv.mkDerivation rec {
     name = pname;
     exec = "discord";
     icon = pname;
-    desktopName = "Discord";
+    inherit desktopName;
     genericName = meta.description;
     categories = "Network;InstantMessaging;";
+    mimeType = "x-scheme-handler/discord";
   };
+
+  passthru.updateScript = ./update-discord.sh;
 
   meta = with stdenv.lib; {
     description = "All-in-one cross-platform voice and text chat for gamers";
-    homepage = https://discordapp.com/;
-    downloadPage = "https://github.com/crmarsh/discord-linux-bugs";
+    homepage = "https://discordapp.com/";
+    downloadPage = "https://discordapp.com/download";
     license = licenses.unfree;
-    maintainers = [ maintainers.ldesgoui maintainers.MP2E ];
+    maintainers = with maintainers; [ ldesgoui MP2E tadeokondrak ];
     platforms = [ "x86_64-linux" ];
   };
 }

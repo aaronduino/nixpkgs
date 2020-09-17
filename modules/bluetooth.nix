@@ -12,8 +12,8 @@ in
 
   config = {
     hardware.bluetooth.powerOnBoot = cfg.bluetooth;
+    hardware.bluetooth.enable = cfg.bluetooth;
   } // mkIf cfg.bluetooth {
-    hardware.bluetooth.enable = true;
     hardware.pulseaudio.package = pkgs.pulseaudioFull;
 
     services.dbus.packages = [ pkgs.blueman ];

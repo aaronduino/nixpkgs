@@ -28,7 +28,7 @@ fi
 if [ `whoami` = "root" ]; then
 	echo -n "#"
 else
-	echo -n "$"
+	echo -n "λ"
 fi
 
 echo -n " "

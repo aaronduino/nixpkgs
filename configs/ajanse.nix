@@ -6,35 +6,14 @@ in
   imports = [
     ../hardware/xps.nix
     ../modules
-    ../cachix.nix
 
-    # (import ./nixos-router/mkRouter.nix {
-    #   internalInterface = "ens8u1";
-    #   externalInterface = "wlp2s0";
-    # })
+"${builtins.fetchGit {
+      url = "https://github.com/msteen/nixos-vsliveshare.git";
+      ref = "refs/heads/master";
+    }}"
   ];
 
-  nix.extraOptions = ''
-    extra-platforms = aarch64-linux arm-linux
-  '';
-
-  networking.nat.enable = true;
-  networking.nat.internalIPs = [ "192.168.2.0/24" ];
-  networking.nat.externalInterface = "wlp2s0";
-  networking.nat.internalInterfaces = [ eth ];
-
-  systemd.services = {
-    "network-link-${eth}".wantedBy = lib.mkForce [];
-    "network-addresses-${eth}".wantedBy = lib.mkForce [];
-    rpi-netdev.wantedBy = lib.mkForce [];
-  };
-
-  networking.bridges.rpi = {
-    interfaces = [ eth "wlp2s0" ];
-    rstp = true;
-  };
-  # networking.interfaces.rpi.ipv4.addresses =
-  #   [ { address = "192.168.2.1"; prefixLength = 24; } ];
+services.vsliveshare.enable = true;
 
   vars = {
     hardware = "xps";
@@ -54,11 +33,17 @@ in
     yubikey = true;
 
     latex = true;
-    enableVPN = false;
+    enableVPN = true;
 
     secrets = ../secrets/ajanse;
   };
 
+virtualisation.docker = {
+  enable = true;
+storageDriver = "zfs";
+};
+
+boot.kernelParams = [ "mem_sleep_default=deep" ];
   services.tftpd = {
     enable = false;
   };
@@ -86,41 +71,34 @@ in
     xkbOptions = "caps:escape";
   };
 
+nix = {
+  distributedBuilds = false;
+#  buildMachines = [
+#    { hostName = "beta.nixbuild.net";
+#      system = "x86_64-linux";
+#      maxJobs = 100;
+#      supportedFeatures = [ "benchmark" "big-parallel" ];
+#    }
+#  ];
+};
+
+programs.ssh.extraConfig = ''
+  Host beta.nixbuild.net
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    PubkeyAcceptedKeyTypes ssh-ed25519
+    IdentityFile /home/ajanse/.ssh/ajanse-nixbuild
+'';
+
 
   networking.hosts = {
+   "127.0.0.1" = ["test.dev" "abc.dev" "xyz.123.dev"];
+   "fc5e:3b2e:ccfe:8eb2:a037:7955:e242:78be" = ["cjrpi.dev"];
     #    "127.0.0.1" = [ "news.ycombinator.com" "reddit.com" "www.reddit.com" ];
   };
 
-  boot.kernelPackages =
-    let
-      linux_pkg =
-        { stdenv, buildPackages, fetchurl, perl, buildLinux, modDirVersionArg ? null, ... } @ args:
-          with stdenv.lib;
-          buildLinux (
-            args // rec {
-              version = "5.3.16";
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
-              modDirVersion = if (modDirVersionArg == null) then concatStringsSep "." (take 3 (splitVersion "${version}.0")) else modDirVersionArg;
-
-              kernelPatches = [
-                {
-                  name = "fix-display";
-                  patch = pkgs.fetchpatch {
-                    url = "https://bugs.freedesktop.org/attachment.cgi?id=144765";
-                    sha256 = "sha256-Fc6V5UwZsU6K3ZhToQdbQdyxCFWd6kOxU6ACZKyaVZo=";
-                  };
-                }
-              ];
-
-              src = fetchurl {
-                url = "mirror://kernel/linux/kernel/v5.x/linux-${version}.tar.xz";
-                sha256 = "19asdv08rzp33f0zxa2swsfnbhy4zwg06agj7sdnfy4wfkrfwx49";
-              };
-            } // (args.argsOverride or {})
-          );
-      linux = pkgs.callPackage linux_pkg {};
-    in
-      pkgs.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
 
   boot.supportedFilesystems = [ "zfs" ];
   boot.zfs.requestEncryptionCredentials = true;
@@ -150,4 +128,23 @@ in
     Defaults${"\t"}lecture_file=${../assets/sudo_lecture.txt}
     Defaults${"\t"}insults
   '';
+
+
+services.hydra = {
+    package = pkgs.hydra-unstable;
+    enable = false;
+    hydraURL = "http://hydra.example.org";
+    notificationSender = "hydra@example.org";
+    port = 8080;
+    extraConfig = "binary_cache_secret_key_file = /etc/nix/hydra.example.org-1/secret";
+    buildMachinesFiles = [ "/etc/nix/machines" ];
+  };
+
+environment.enableDebugInfo = true;
+
+  services.postgresql = {
+enable = false;
+    dataDir = "/var/db/postgresql-${config.services.postgresql.package.psqlSchema}";
+  };
+
 }

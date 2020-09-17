@@ -137,6 +137,7 @@ in
       programs.alacritty = {
         enable = true;
         settings = {
+          env.TERM = "xterm-256color";
           # font.normal.family = "Overpass Mono";
           colors = {
             primary = {
@@ -210,11 +211,35 @@ in
     environment.systemPackages = with pkgs; [
       firefox
       # ajanse-vscode
-      vscode
+      # vscode
+(vscode-with-extensions.override {
+        vscodeExtensions = with vscode-extensions; [
+          ms-vscode.cpptools
+        ] ++ vscode-utils.extensionsFromVscodeMarketplace [
+          {
+            name = "theme-dracula";
+            publisher = "dracula-theme";
+            version = "2.22.1";
+            sha256 = "13x8vayak9b1biqb4rvisywh1zzh5l7g63kv7y6kqgirm2b5wzsi";
+          }
+          {
+            name = "nix-lsp";
+            publisher = "aaronduino";
+            version = "0.0.1";
+            sha256 = "190pqcxlz98grigbppkrj5zvwk8d9si70na7jmilypaxn3zdmm9w";
+          }
+          {
+            name = "rust";
+            publisher = "rust-lang";
+            version = "0.7.8";
+            sha256 = "039ns854v1k4jb9xqknrjkj8lf62nfcpfn0716ancmjc4f0xlzb3";
+          }
+        ];
+      })
       (import ../pkgs/sublime-merge).sublimeMerge
       # freeoffice
-      #      (pkgs.callPackage (import ../pkgs/discord) {})
-      discord
+      (pkgs.callPackage (import ../pkgs/discord/default.nix) {})
+      # discord
       spotify
       evince
       okular
