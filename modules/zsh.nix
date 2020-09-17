@@ -18,128 +18,43 @@ in
   config = mkIf config.enableZSH {
     users.defaultUserShell = pkgs.zsh;
     environment.pathsToLink = [ "/share/zsh" ]; # for zsh completion
-    programs.thefuck = {
-      enable = true;
-      alias = "f";
-    };
-    # programs.zsh = {
-    #   enable = true;
-    #   enableCompletion = true;
-    #   syntaxHighlighting = {
-    #     enable = true;
-    #     highlighters = [ "main" "brackets" ];
-    #   };
-    #   zsh-autoenv.enable = true;
-    #   autosuggestions = {
-    #     enable = true;
-    #   };
-    #   promptInit = ''
-    #     autoload -U colors && colors
-
-    #     precmd () { PS1=$(zsh ${../bin/prompt.sh}) }
-    #   '';
-    #   interactiveShellInit = ''
-    #     export GOPATH=$HOME/go
-
-    #     # z -- jump around
-    #     source ${pkgs.fetchurl { url = "https://github.com/rupa/z/raw/2ebe419ae18316c5597dd5fb84b5d8595ff1dde9/z.sh"; sha256 = "0ywpgk3ksjq7g30bqbhl9znz3jh6jfg8lxnbdbaiipzgsy41vi10"; }}
-
-    #     HISTFILE=~/.histfile
-    #     HISTSIZE=10000
-    #     SAVEHIST=10000
-    #     setopt appendhistory autocd
-    #     unsetopt beep extendedglob
-
-    #     # source ${../bin/nix-shell.plugin.zsh}
-
-    #     export SOPS_PGP_FP=CED96DF463D7B86A1C4B1322BE6C92145BFF4A34
-    #     export EDITOR=vim
-    #   '' + (
-    #     let
-    #       envPath = "${cfg.secrets}/restic-env.conf";
-    #       passPath = "${cfg.secrets}/restic-password.txt";
-    #     in
-    #       if (
-    #         (builtins.pathExists envPath)
-    #         && (builtins.pathExists passPath)
-    #       ) then ''
-    #         r-b2 () {
-    #          ( cd /home/${cfg.username}/backups && source ${envPath} && restic -r b2:ajanse-archive:/ -p ${passPath} $* )
-    #         }
-
-    #         r-nas () {
-    #         ( cd /home/${cfg.username}/backups && source ${envPath} && restic -p ${passPath} -r sftp:aaron@192.168.1.160:/homes/aaron $* )
-    #         }
-    #       '' else ""
-    #   );
-    #   shellAliases = {
-    #     c = "clear";
-
-    #     pbcopy = "xclip -i -selection clipboard";
-    #     pbpaste = "xclip -o";
-
-    #     gad = "git add .";
-    #     sgad = "sudo git add .";
-
-    #     gcm = "git commit -m";
-    #     sgcm = "sudo git commit -m";
-
-    #     gp = "git push";
-    #     sgp = "sudo git push";
-    #   };
-    # };
-    home-manager.users = let
-      fzf = {
-        enable = true;
-        enableZshIntegration = true;
-        enableBashIntegration = true;
-        # historyWidgetCommand = "history";
-      }; zsh = {
-      enable = true;
-      enableAutosuggestions = true;
-      autocd = true;
-      history.save = 10000000;
-      history.size = 10000000;
-      plugins = [
-      {
-        name = "zsh-nix-shell";
-        src = pkgs.fetchFromGitHub {
-          owner = "chisui";
-          repo = "zsh-nix-shell";
-          rev = "v0.1.0";
-          sha256 = "0snhch9hfy83d4amkyxx33izvkhbwmindy0zjjk28hih1a9l2jmx";
+    home-manager.users =
+      let
+        fzf = {
+          enable = true;
+          enableZshIntegration = true;
+          enableBashIntegration = true;
         };
-      }
-    ];
-      initExtra = ''
-        autoload -U colors && colors
+        zsh = {
+          enable = true;
+          enableAutosuggestions = true;
+          autocd = true;
+          history.save = 10000000;
+          history.size = 10000000;
+          plugins = [
+            {
+              name = "zsh-nix-shell";
+              src = pkgs.fetchFromGitHub {
+                owner = "chisui";
+                repo = "zsh-nix-shell";
+                rev = "v0.1.0";
+                sha256 = "0snhch9hfy83d4amkyxx33izvkhbwmindy0zjjk28hih1a9l2jmx";
+              };
+            }
+          ];
+          initExtra = ''
+            autoload -U colors && colors
 
-        precmd () { PS1=$(zsh ${../bin/prompt.sh}) }
-
-      '' + (let
-           envPath = "${cfg.secrets}/restic-env.conf";
-           passPath = "${cfg.secrets}/restic-password.txt";
-         in
-           if (
-             (builtins.pathExists envPath)
-             && (builtins.pathExists passPath)
-          ) then ''
-             r-b2 () {
-              ( cd /home/${cfg.username} && source ${envPath} && restic -r b2:ajanse-archive:/ -p ${passPath} $* )
-             }
-
-             r-nas () {
-             ( cd /home/${cfg.username} && source ${envPath} && restic -p ${passPath} -r sftp:aaron@192.168.1.160:/homes/aaron $* )
-             }
-     '' else "");
-    };
-    in
+            precmd () { PS1=$(zsh ${../bin/prompt.sh}) }
+          '';
+        };
+      in
       {
-        root.programs.fzf = fzf;
-        root.programs.zsh = zsh;
+        root.programs = {
+          inherit fzf zsh;
+        };
         "${cfg.username}".programs = {
-          fzf = fzf;
-          zsh = zsh;
+          inherit fzf zsh;
         };
       };
   };

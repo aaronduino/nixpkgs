@@ -103,6 +103,11 @@ networking.firewall.enable = false;
       )
     ];
   };
+    sound.enable = true;
+    hardware.pulseaudio = {
+      enable = true;
+      daemon.config = { flat-volumes = "no"; };
+    };
 
   users.mutableUsers = true;
   users.users.${cfg.username} = {

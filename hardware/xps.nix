@@ -9,10 +9,8 @@ in
 
   vars = {
     hidpi = true;
-    sound = lib.mkDefault true;
     bluetooth = lib.mkDefault true;
     printing = lib.mkDefault true;
-    # gui = lib.mkDefault "i3";
   };
 
   # use systemd-boot with uefi
@@ -33,7 +31,6 @@ in
     tappingDragLock = false;
     naturalScrolling = true;
   };
-
 
   boot.kernelPackages =
     let

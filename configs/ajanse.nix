@@ -26,7 +26,6 @@ services.vsliveshare.enable = true;
     name = "Aaron Janse";
     email = "aaron@ajanse.me";
 
-    sound = true;
     bluetooth = true;
     printing = true;
 

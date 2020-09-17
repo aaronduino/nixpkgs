@@ -17,8 +17,8 @@ in
 
   config = {
     # for yubikey
-    services.pcscd.enable = cfg.yubikey;
-    services.udev.packages = if cfg.yubikey then [ pkgs.yubikey-personalization ] else [];
+    services.pcscd.enable = true;
+    services.udev.packages = if true then [ pkgs.yubikey-personalization ] else [];
 
     systemd.user.sockets.gpg-agent-ssh = {
       wantedBy = [ "sockets.target" ];
@@ -31,7 +31,7 @@ in
       };
     };
 
-    environment.systemPackages = if cfg.yubikey then [ pkgs.yubikey-personalization ] else [];
+    # environment.systemPackages = if cfg.yubikey then [ pkgs.yubikey-personalization ] else [];
 
     environment.shellInit = ''
       export GPG_TTY="$(tty)"
@@ -41,17 +41,14 @@ in
 
     programs = {
       ssh.startAgent = false;
-      gnupg.agent = {
-        # enable = true;
-        enableSSHSupport = true;
-      };
+      gnupg.agent.enableSSHSupport = true;
     };
 
     home-manager.users = let
       gpg = {
         services.gpg-agent = {
           enable = true;
-          enableScDaemon = cfg.yubikey; # smartcard daemon
+          enableScDaemon = true; # smartcard daemon
           enableSshSupport = true;
         };
         programs.gpg = {
