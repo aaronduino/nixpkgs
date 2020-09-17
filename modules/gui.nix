@@ -20,17 +20,16 @@ in
       enable = true;
 
       # auto login
-      displayManager.lightdm.autoLogin = {
+      displayManager.autoLogin = {
         enable = true;
         user = cfg.username;
       };
 
-
-      #displayManager.sessionCommands = ''
-      #  ${pkgs.xorg.xrdb}/bin/xrdb -merge <<EOF
-      #    Xft.dpi: 192
-      #  EOF
-      #'';
+      displayManager.sessionCommands = ''
+        ${pkgs.xorg.xrdb}/bin/xrdb -merge <<EOF
+          Xft.dpi: 192
+        EOF
+      '';
     };
 
     systemd.services = {
@@ -42,14 +41,6 @@ in
         '';
       };
     };
-
-
-
-    # vars.colors = {
-    #   background = "#343d46";
-    #   green = "#8eb975";
-    #   purple = "#c494c3";
-    # };
 
     boot.plymouth.enable = false;
 
@@ -124,10 +115,10 @@ in
             normal = rec {
               foreground = "#fafbfc";
               background = "argb:00ffffff";
-              backgroundAlt = "argb:00ffffff"; # argb:58455a64
+              backgroundAlt = "argb:00ffffff";
               highlight = {
-                background = "#181920";
-                foreground = "#BD93F9";
+                inherit (cfg.colors) background;
+                foreground = cfg.colors.blue;
               };
             };
           };
@@ -138,30 +129,18 @@ in
         enable = true;
         settings = {
           env.TERM = "xterm-256color";
-          # font.normal.family = "Overpass Mono";
           colors = {
             primary = {
-              background = cfg.colors.background;
-              foreground = cfg.colors.foreground;
+              inherit (cfg.colors) foreground background;
             };
             normal = {
+              inherit (cfg.colors) red green blue magenta cyan yellow;
               black = "0x000000";
-              red = "0xff5555";
-              green = cfg.colors.green;
-              yellow = "0xf1fa8c";
-              blue = "0xbd93f9";
-              magenta = "0xff79c6";
-              cyan = "0x8be9fd";
               white = "0xbbbbbb";
             };
             bright = {
+              inherit (cfg.colors) red green blue magenta cyan yellow;
               black = "0x555555";
-              red = "0xff5555";
-              green = "0x50fa7b";
-              yellow = "0xf1fa8c";
-              blue = "0xbd93f9";
-              magenta = "0xff79c6";
-              cyan = "0x8be9fd";
               white = "0xffffff";
             };
           };
@@ -216,10 +195,10 @@ in
           james-yu.latex-workshop
         ] ++ vscode-utils.extensionsFromVscodeMarketplace [
           {
-            name = "theme-dracula";
-            publisher = "dracula-theme";
+            name = "theme-dracula-refined";
+            publisher = "mathcale";
             version = "2.22.1";
-            sha256 = "13x8vayak9b1biqb4rvisywh1zzh5l7g63kv7y6kqgirm2b5wzsi";
+            sha256 = "03m44a3qmyz4mmfn1pzfcwc77wif4ldf2025nj9rys6lfhcz0x1n";
           }
           {
             name = "nix-lsp";
@@ -241,15 +220,12 @@ in
           }
         ];
       })
-      (import ../pkgs/sublime-merge).sublimeMerge
       (pkgs.callPackage (import ../pkgs/discord/default.nix) { })
       spotify
       evince
       okular
 
       qbittorrent
-
-      sublime3
 
       libnotify
       xclip
@@ -267,23 +243,20 @@ in
     nixpkgs.overlays = [
       (
         self: super: rec {
-          ajanse-vscode = super.vscode-with-extensions.override {
-            vscodeExtensions = with super.vscode-extensions; [ ms-vscode.cpptools ];
-          };
           signal-desktop = super.signal-desktop.overrideAttrs (
             oldAttrs: rec {
-              preFixup = oldAttrs.preFixup + ''
+              preFixup = with cfg.colors; oldAttrs.preFixup + ''
                 cp $out/lib/Signal/resources/app.asar $out/lib/Signal/resources/app.asar.bak
                 cat $out/lib/Signal/resources/app.asar.bak \
-                  | sed 's/background-color: #f6f6f6;/background-color: #181920;/g' \
-                  | sed 's/#1b1b1b;/#f8f8f2;/g' \
-                  | sed 's/#5e5e5e;/#f8f8f2;/g' \
+                  | sed 's/background-color: #f6f6f6;/background-color: ${background};/g' \
+                  | sed 's/#1b1b1b;/${foreground};/g' \
+                  | sed 's/#5e5e5e;/${foreground};/g' \
                   | sed 's/-color: #ffffff;/-color: #282a36;/g' \
                   | sed 's/background: #ffffff;/background: #282a36;/g' \
                   | sed 's/#dedede;/#44475a;/g' \
                   | sed 's/#e9e9e9;/#44475a;/g' \
                   | sed 's/1px solid #ffffff;/1px solid #282a36;/g' \
-                  | sed 's/#f6f6f6;/#181920;/g' \
+                  | sed 's/#f6f6f6;/${background};/g' \
                   | sed 's/#b9b9b9;/#44475a;/g' \
                   | sed 's/2px solid #ffffff;/2px solid #282a36;/g' \
                   | sed 's/setMenuBarVisibility(visibility);/setMenuBarVisibility(false     );/g' \

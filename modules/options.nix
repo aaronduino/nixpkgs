@@ -62,14 +62,19 @@ with lib;
         default = "#50fa7b";
       };
 
-      blue = mkOption {
+      cyan = mkOption {
         type = types.str;
         default = "#8be9fd";
       };
 
-      purple = mkOption {
+      blue = mkOption {
         type = types.str;
         default = "#bd93f9";
+      };
+
+      magenta = mkOption {
+        type = types.str;
+        default = "#ff79c6";
       };
     };
 

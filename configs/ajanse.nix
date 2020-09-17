@@ -6,14 +6,7 @@ in
   imports = [
     ../hardware/xps.nix
     ../modules
-
-"${builtins.fetchGit {
-      url = "https://github.com/msteen/nixos-vsliveshare.git";
-      ref = "refs/heads/master";
-    }}"
   ];
-
-services.vsliveshare.enable = true;
 
   vars = {
     hardware = "xps";
@@ -22,7 +15,6 @@ services.vsliveshare.enable = true;
 
     gui = "i3";
 
-    # for git
     name = "Aaron Janse";
     email = "aaron@ajanse.me";
 
@@ -37,12 +29,12 @@ services.vsliveshare.enable = true;
     secrets = ../secrets/ajanse;
   };
 
-virtualisation.docker = {
-  enable = true;
-storageDriver = "zfs";
-};
+  virtualisation.docker = {
+    enable = true;
+    storageDriver = "zfs";
+  };
 
-boot.kernelParams = [ "mem_sleep_default=deep" ];
+  boot.kernelParams = [ "mem_sleep_default=deep" ];
 
   services.redshift.enable = false;
   location.provider = "geoclue2";
