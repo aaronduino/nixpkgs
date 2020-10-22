@@ -115,7 +115,7 @@ networking.firewall.enable = false;
     uid = 1000;
     group = "users";
     extraGroups = [
-      "wheel"
+      "wheel" "lp"
       "video"
       "audio"
       "vboxusers"

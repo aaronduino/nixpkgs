@@ -11,7 +11,7 @@ in
     };
   };
 
-  config = mkIf cfg.enableVPN {
+  config = mkIf false {
     services.openvpn.servers.proton = {
       config = "config ${../secrets/ajanse/vpn.ovpn}";
       updateResolvConf = true;

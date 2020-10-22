@@ -29,6 +29,8 @@ in
     secrets = ../secrets/ajanse;
   };
 
+  boot.extraModulePackages = [ config.boot.kernelPackages.wireguard ];
+
   virtualisation.docker = {
     enable = true;
     storageDriver = "zfs";
@@ -61,5 +63,4 @@ in
     };
   };
 
-  networking.hostId = "7988c4e1";
 }

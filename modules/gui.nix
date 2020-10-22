@@ -128,6 +128,7 @@ in
       programs.alacritty = {
         enable = true;
         settings = {
+#          window.padding = { x = 10; y = 10; };
           env.TERM = "xterm-256color";
           colors = {
             primary = {
@@ -186,13 +187,17 @@ in
       };
     };
 
+#    services.udev.packages = [(pkgs.callPackage ../energia.nix {})];
+
     # for more packages, see default.nix
     environment.systemPackages = with pkgs; [
-      firefox
-      (vscode-with-extensions.override {
+      firefox # (callPackage ../energia.nix {})
+      # (callPackage /home/ajanse/taskpilot {})
+      (if false then htop else (vscode-with-extensions.override {
         vscodeExtensions = with vscode-extensions; [
           ms-vscode.cpptools
           james-yu.latex-workshop
+          (callPackage ../pkgs/liveshare {})
         ] ++ vscode-utils.extensionsFromVscodeMarketplace [
           {
             name = "theme-dracula-refined";
@@ -219,9 +224,8 @@ in
             sha256 = "08lhzhrn6p0xwi0hcyp6lj9bvpfj87vr99klzsiy8ji7621dzql3";
           }
         ];
-      })
-      (pkgs.callPackage (import ../pkgs/discord/default.nix) { })
-      spotify
+      }))
+      discord
       evince
       okular
 

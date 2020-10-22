@@ -11,16 +11,22 @@ in
   };
 
   config = {
-    hardware.bluetooth.powerOnBoot = cfg.bluetooth;
+   # hardware.bluetooth.powerOnBoot = cfg.bluetooth;
     hardware.bluetooth.enable = cfg.bluetooth;
-  } // mkIf cfg.bluetooth {
-    hardware.pulseaudio.package = pkgs.pulseaudioFull;
+ services.blueman.enable = true;
 
-    services.dbus.packages = [ pkgs.blueman ];
-    environment.systemPackages = [ pkgs.blueman ];
+hardware.pulseaudio = {
+    enable = true;
+    extraModules = [ pkgs.pulseaudio-modules-bt ];
+    package = pkgs.pulseaudioFull;
+  };
+  } // mkIf true {
 
-    home-manager.users.${cfg.username} = {
-      services.blueman-applet.enable = true;
-    };
+    #services.dbus.packages = [ pkgs.blueman ];
+    environment.systemPackages = [ pkgs.blueman pkgs.bluez ];
+
+    #home-manager.users.${cfg.username} = {
+    #  services.blueman-applet.enable = true;
+    #};
   };
 }
