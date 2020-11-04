@@ -9,23 +9,7 @@
   <img src="./screenshots/htop.png" width="400" />
 </p>
 
-## Generating ISO
-
-Install [nixos-generators](https://github.com/nix-community/nixos-generators)
-```
-nix-env -f https://github.com/nix-community/nixos-generators/archive/master.tar.gz -i
-```
-
-And generate:
-```
-nixos-generate -c ./machines/demo -f iso
-```
-
-Or:
-
-```
-nix-build '<nixpkgs/nixos>' -A config.system.build.isoImage -I configs/usb.nix
-```
+The content below is somewhat outdated.
 
 ## Installation
 
@@ -70,7 +54,7 @@ To install these dotfiles:
 cd /mnt/etc/nixos
 
 nix-env -iA nixos.git
-git clone git@github.com:aaronduino/nixos
+git clone git@github.com:aaronjanse/nixos
 ```
 
 To finally install:

@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
 
-if [ "$NIX_SHELL_PACKAGES"  ]; then
+if [ -z "$HISTFILE"  ]; then
 	echo -n '%{%F{red}%}' # red
-	echo -n "$NIX_SHELL_PACKAGES "
-	echo -n '%{%f%}'
-fi
-
-if [ "$NIXSHELL"  ]; then
-	echo -n '%{%F{cyan}%}' # cyan
-	echo -n "$NIXSHELL "
+	echo -n "tmp "
 	echo -n '%{%f%}'
 fi
 
@@ -22,6 +16,14 @@ branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ "$branch" ]; then
 	echo -n '%{%F{magenta}%}'
 	echo -n "$branch "
+	echo -n '%{%f%}'
+fi
+
+NIXSHELL=$(echo $PATH | tr ':' '\n' | grep '/nix/store' | sed 's#^/nix/store/[a-z0-9]\+-##' | sed 's#-[^-]\+$##' | xargs)
+
+if [ "$NIXSHELL"  ]; then
+	echo -n '%{%F{cyan}%}' # cyan
+	echo -n "$NIXSHELL "
 	echo -n '%{%f%}'
 fi
 
