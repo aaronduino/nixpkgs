@@ -20,6 +20,7 @@
         }
       ];
     };
+
     packages.x86_64-linux =
       let
         pkgs = import ./wrapped-pkgs.nix { inherit nixpkgsOrig; };
@@ -36,6 +37,7 @@
             unzip
             vim
             git-wrapped
+            ripgrep
           ];
           extraOutputsToInstall = [ "man" "doc" ];
         };
@@ -44,6 +46,7 @@
           paths = with pkgs; [
             self.packages.x86_64-linux.barebones
             cachix
+            nixops
             htop
             zsh
             fzf
@@ -52,7 +55,11 @@
             hexyl
             lsof
             bat
+            tree
+            pstree
+            cryptsetup
             gitAndTools.gh
+            wireguard
           ];
           extraOutputsToInstall = [ "man" "doc" ];
         };
@@ -64,6 +71,7 @@
             nixpkgs-fmt
             imagemagick
             tomb
+            w3m
           ];
           extraOutputsToInstall = [ "man" "doc" ];
         };
@@ -84,6 +92,7 @@
             fortune
             cowsay
             cmatrix
+            nodejs
           ];
           extraOutputsToInstall = [ "man" "doc" ];
         };
@@ -101,6 +110,7 @@
             signal-desktop
             vscode
             zoom-us
+            spotify
             blueman
             mullvad-vpn
             rofi

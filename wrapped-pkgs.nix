@@ -120,11 +120,17 @@ let
             ms-python.python
             ms-vsliveshare.vsliveshare
           ] ++ nixpkgs.vscode-utils.extensionsFromVscodeMarketplace [
-            {
+            { # broken, I think
               name = "hg";
               publisher = "mrcrowl";
               version = "1.7.1";
               sha256 = "sha256-ANHzZGAHtKoT/WGarg55jp4S4FO7/1+mFylliM9hluI=";
+            }
+            {
+              name = "Go";
+              publisher = "golang";
+              version = "0.18.1";
+              sha256 = "sha256-b2Wa3TULQQnBm1/xnDCB9SZjE+Wxz5wBttjDEtf8qlE=";
             }
             {
               name = "theme-dracula-refined";
