@@ -23378,6 +23378,8 @@ in
 
   spotify = callPackage ../applications/audio/spotify/wrapper.nix { };
 
+  spotify-spiced = callPackage ../applications/misc/spotify-spiced { };
+
   libspotify = callPackage ../development/libraries/libspotify (config.libspotify or {});
 
   sourcetrail = callPackage ../development/tools/sourcetrail { };
