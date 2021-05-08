@@ -28,6 +28,10 @@ stdenv.mkDerivation rec {
 
   mesonFlags = [ "-Dlogind-provider=systemd" "-Dlibseat=disabled" ];
 
+  patches = [
+    ./xwayland.patch
+  ];
+
   postFixup = ''
     # Install ALL example programs to $examples:
     # screencopy dmabuf-capture input-inhibitor layer-shell idle-inhibit idle

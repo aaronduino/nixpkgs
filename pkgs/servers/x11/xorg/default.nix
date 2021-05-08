@@ -2691,16 +2691,17 @@ lib.makeScope newScope (self: with self; {
     meta.platforms = lib.platforms.unix;
   }) {};
 
-  xorgserver = callPackage ({ stdenv, pkg-config, fetchurl, xorgproto, openssl, libX11, libXau, libXaw, libxcb, xcbutil, xcbutilwm, xcbutilimage, xcbutilkeysyms, xcbutilrenderutil, libXdmcp, libXfixes, libxkbfile, libXmu, libXpm, libXrender, libXres, libXt }: stdenv.mkDerivation {
+  xorgserver = callPackage ({ stdenv, pkg-config, fetchgit, autoreconfHook, utilmacros, xorgproto, openssl, libX11, libXau, libXaw, libxcb, xcbutil, xcbutilwm, xcbutilimage, xcbutilkeysyms, xcbutilrenderutil, libXdmcp, libXfixes, libxkbfile, libXmu, libXpm, libXrender, libXres, libXt }: stdenv.mkDerivation {
     name = "xorg-server-1.20.11";
     builder = ./builder.sh;
-    src = fetchurl {
-      url = "mirror://xorg/individual/xserver/xorg-server-1.20.11.tar.bz2";
-      sha256 = "0jacqgin8kcyy8fyv0lhgb4if8g9hp60rm3ih3s1mgps7xp7jk4i";
+    src = fetchgit {
+      url = "https://gitlab.freedesktop.org/MisterDA/xserver";
+      rev = "2b3c4983f937c96e2c60d5f903d44e5fd9280c85";
+      sha256 = "sha256-fKKqTwGPpvQNNH1iWOItedrUg7y7241a62YzWcVTFlQ=";
     };
     hardeningDisable = [ "bindnow" "relro" ];
-    nativeBuildInputs = [ pkg-config ];
-    buildInputs = [ xorgproto openssl libX11 libXau libXaw libxcb xcbutil xcbutilwm xcbutilimage xcbutilkeysyms xcbutilrenderutil libXdmcp libXfixes libxkbfile libXmu libXpm libXrender libXres libXt ];
+    nativeBuildInputs = [ pkg-config autoreconfHook ];
+    buildInputs = [ utilmacros fontutil xorgproto openssl libX11 libXau libXaw libxcb xcbutil xcbutilwm xcbutilimage xcbutilkeysyms xcbutilrenderutil libXdmcp libXfixes libxkbfile libXmu libXpm libXrender libXres libXt ];
     meta.platforms = lib.platforms.unix;
   }) {};
 

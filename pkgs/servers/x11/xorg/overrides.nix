@@ -585,20 +585,12 @@ self: super:
         else if (abiCompat == "1.17") then {
           name = "xorg-server-1.17.4";
           builder = ./builder.sh;
-          src = fetchurl {
-            url = "mirror://xorg/individual/xserver/xorg-server-1.17.4.tar.bz2";
-            sha256 = "0mv4ilpqi5hpg182mzqn766frhi6rw48aba3xfbaj4m82v0lajqc";
-          };
           nativeBuildInputs = [ pkg-config ];
           buildInputs = [ xorgproto libdrm openssl libX11 libXau libXaw libxcb xcbutil xcbutilwm xcbutilimage xcbutilkeysyms xcbutilrenderutil libXdmcp libXfixes libxkbfile libXmu libXpm libXrender libXres libXt ];
           meta.platforms = lib.platforms.unix;
         } else if (abiCompat == "1.18") then {
             name = "xorg-server-1.18.4";
             builder = ./builder.sh;
-            src = fetchurl {
-              url = "mirror://xorg/individual/xserver/xorg-server-1.18.4.tar.bz2";
-              sha256 = "1j1i3n5xy1wawhk95kxqdc54h34kg7xp4nnramba2q8xqfr5k117";
-            };
             nativeBuildInputs = [ pkg-config ];
             buildInputs = [ xorgproto libdrm openssl libX11 libXau libXaw libxcb xcbutil xcbutilwm xcbutilimage xcbutilkeysyms xcbutilrenderutil libXdmcp libXfixes libxkbfile libXmu libXpm libXrender libXres libXt ];
             postPatch = lib.optionalString stdenv.isLinux "sed '1i#include <malloc.h>' -i include/os.h";

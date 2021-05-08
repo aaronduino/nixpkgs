@@ -1,32 +1,24 @@
+From dd2eb95c6dc35fc6128dfde07eeb7a241f870f93 Mon Sep 17 00:00:00 2001
+From: Aaron Janse <aaron@ajanse.me>
+Date: Fri, 23 Apr 2021 17:57:41 +0000
+Subject: [PATCH] foobar
+
 ---
  hw/xfree86/Makefile.am | 1 -
- hw/xfree86/Makefile.in | 1 -
- 2 files changed, 2 deletions(-)
+ 1 file changed, 1 deletion(-)
 
 diff --git a/hw/xfree86/Makefile.am b/hw/xfree86/Makefile.am
-index 9aeaea1..dcca3b8 100644
+index baf380d..c981f3e 100644
 --- a/hw/xfree86/Makefile.am
 +++ b/hw/xfree86/Makefile.am
-@@ -100,7 +100,6 @@ EXTRA_DIST = xorgconf.cpp
- 
+@@ -97,7 +97,6 @@ EXTRA_DIST = xorgconf.cpp
+
  # Without logdir, X will post an error on the terminal and will not start
  install-data-local:
 -	$(AM_V_GEN)$(MKDIR_P) $(DESTDIR)$(logdir)
  if CYGWIN
  	$(INSTALL_DATA) libXorg.exe.a $(DESTDIR)$(libdir)/libXorg.exe.a
  endif
-diff --git a/hw/xfree86/Makefile.in b/hw/xfree86/Makefile.in
-index c4fceee..74da8f1 100644
---- a/hw/xfree86/Makefile.in
-+++ b/hw/xfree86/Makefile.in
-@@ -1161,7 +1161,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-local \
- 
- # Without logdir, X will post an error on the terminal and will not start
- install-data-local:
--	$(AM_V_GEN)$(MKDIR_P) $(DESTDIR)$(logdir)
- @CYGWIN_TRUE@	$(INSTALL_DATA) libXorg.exe.a $(DESTDIR)$(libdir)/libXorg.exe.a
- 
- install-exec-hook:
--- 
-2.25.4
+--
+2.30.1
 

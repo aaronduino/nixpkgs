@@ -17,6 +17,8 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
+    ./xwayland.patch
+
     ./sway-config-no-nix-store-references.patch
     ./load-configuration-from-etc.patch
 
