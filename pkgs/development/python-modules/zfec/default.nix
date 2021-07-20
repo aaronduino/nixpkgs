@@ -1,7 +1,6 @@
 { lib
 , buildPythonPackage
 , fetchPypi
-, setuptoolsDarcs
 , pyutil
 }:
 
@@ -14,7 +13,7 @@ buildPythonPackage rec {
     sha256 = "6033b2f3cc3edacf3f7eeed5f258c1ebf8a1d7e5e35b623db352512ce564e5ca";
   };
 
-  buildInputs = [ setuptoolsDarcs ];
+  buildInputs = [ ];
   propagatedBuildInputs = [ pyutil ];
 
   # argparse is in the stdlib but zfec doesn't know that.

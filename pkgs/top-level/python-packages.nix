@@ -7195,6 +7195,10 @@ in {
     inherit (pkgs) libusb1;
   };
 
+  pyutil = callPackage ../development/python-modules/pyutil { };
+
+  zfec = callPackage ../development/python-modules/zfec { };
+
   pyutilib = callPackage ../development/python-modules/pyutilib { };
 
   pyuv = callPackage ../development/python-modules/pyuv { };
